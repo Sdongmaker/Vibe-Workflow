@@ -7,6 +7,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { FaRegCirclePause, FaRegCopy, FaRobot } from "react-icons/fa6";
 import { FiMaximize2, FiMinimize2 } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const preprocessContent = (content) => {
   if (!content) return "";
@@ -152,6 +154,7 @@ const preprocessContent = (content) => {
 
 const CodeBlock = ({ language, value }) => {
   const [copied, setCopied] = useState(false);
+  const { t } = useTranslation("chat");
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
@@ -163,7 +166,7 @@ const CodeBlock = ({ language, value }) => {
     <div className="my-4 rounded-xl overflow-hidden border border-white/10 bg-black/60 shadow-2xl group/code">
       <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
         <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          {language || "code"}
+          {language || t("code")}
         </span>
         <button
           type="button"
@@ -174,12 +177,12 @@ const CodeBlock = ({ language, value }) => {
           {copied ? (
             <>
               <IoMdCheckmark size={12} className="text-emerald-400" />
-              <span className="text-emerald-400 uppercase tracking-wider">Copied!</span>
+              <span className="text-emerald-400 uppercase tracking-wider">{t("copied")}</span>
             </>
           ) : (
             <>
               <FaRegCopy size={12} />
-              <span className="uppercase tracking-wider">Copy</span>
+              <span className="uppercase tracking-wider">{t("copy")}</span>
             </>
           )}
         </button>
@@ -193,20 +196,16 @@ const CodeBlock = ({ language, value }) => {
   );
 };
 
-const DEFAULT_SUGGESTIONS = [
-  "Create a workflow that generates an image and then a video from it.",
-  "Help me build a YouTube Shorts automation pipeline.",
-  "Add a text-to-speech node to my current workflow.",
-  "Can you create a multi-model image generation grid?"
-];
+const DEFAULT_SUGGESTION_KEYS = ["suggestion1", "suggestion2", "suggestion3", "suggestion4"];
 
 const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, onClearHistory }) => {
+  const { t } = useTranslation("chat");
   const [inputValue, setInputValue] = useState("");
   const [loadingStep, setLoadingStep] = useState(0);
   const [copiedId, setCopiedId] = useState(null);
   const [isWide, setIsWide] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const loadingTexts = ["Thinking", "Analyzing", "Generating", "Refining", "Processing", "Running"];
+  const loadingTextKeys = ["thinking", "analyzing", "generating", "refining", "processing", "running"];
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const widgetRef = useRef(null);
@@ -215,7 +214,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
     let interval;
     if (isLoading) {
       interval = setInterval(() => {
-        setLoadingStep((prev) => (prev + 1) % loadingTexts.length);
+        setLoadingStep((prev) => (prev + 1) % loadingTextKeys.length);
       }, 5000);
     } else {
       setLoadingStep(0);
@@ -272,8 +271,8 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
     const now = new Date();
     const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
+    if (diffDays === 0) return t("today");
+    if (diffDays === 1) return t("yesterday");
     return date.toLocaleDateString([], { month: "short", day: "numeric" });
   };
 
@@ -302,11 +301,11 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
               </div>
               <div>
                 <h3 className="font-semibold text-white">
-                  AI Assistant
+                  {t("aiAssistant")}
                 </h3>
                 <p className="text-xs text-gray-400 flex items-center gap-1">
                   <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                  Online
+                  {t("online")}
                 </p>
               </div>
             </div>
@@ -315,7 +314,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                 type="button"
                 suppressHydrationWarning={true}
                 onClick={() => setIsWide(!isWide)}
-                title={isWide ? "Narrow View" : "Wide View"}
+                title={isWide ? t("narrowView") : t("wideView")}
                 className="hidden md:flex p-2 text-gray-400 hover:text-blue-400 transition-colors rounded-full hover:bg-white/5"
               >
                 {isWide ? <FiMinimize2 size={18} /> : <FiMaximize2 size={18} />}
@@ -325,7 +324,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                   type="button"
                   suppressHydrationWarning={true}
                   onClick={onClearHistory}
-                  title="Clear Chat History"
+                  title={t("clearChatHistory")}
                   className="p-2 text-gray-400 hover:text-red-400 transition-colors rounded-full hover:bg-white/5"
                 >
                   <IoMdTrash size={20} />
@@ -348,21 +347,21 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                   <div className="p-2 bg-white/5 rounded-2xl border border-white/5 shadow-inner">
                     <FaRobot className="text-3xl text-blue-400 opacity-80" />
                   </div>
-                  <h4 className="text-lg font-semibold text-white mt-2">Welcome!</h4>
-                  <p className="text-sm max-w-[250px]">How can I help you today? Choose a suggestion below or type your own.</p>
+                  <h4 className="text-lg font-semibold text-white mt-2">{t("welcome")}</h4>
+                  <p className="text-sm max-w-[250px]">{t("welcomeDesc")}</p>
                 </div>
                 
                 <div className={`grid ${isWide ? "grid-cols-2" : "grid-cols-1"} gap-2 w-full`}>
-                  {DEFAULT_SUGGESTIONS.map((suggestion, sIdx) => (
+                  {DEFAULT_SUGGESTION_KEYS.map((key, sIdx) => (
                     <button
                       type="button"
                       suppressHydrationWarning={true}
                       key={sIdx}
-                      onClick={() => onSendMessage(suggestion)}
+                      onClick={() => onSendMessage(t(key))}
                       className="px-4 py-3 text-xs font-medium bg-white/5 text-gray-300 rounded-xl hover:bg-blue-600/20 hover:text-blue-400 hover:border-blue-500/50 transition-all text-left border border-white/10 shadow-sm cursor-pointer flex items-center gap-3 group"
                     >
                       <BsStars size={12} className="text-blue-400/50 group-hover:text-blue-400 transition-colors" />
-                      {suggestion}
+                      {t(key)}
                     </button>
                   ))}
                 </div>
@@ -440,7 +439,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                         </ReactMarkdown>
                         {msg.suggestions && msg.suggestions.length > 0 && (
                           <div className="flex flex-col gap-2">
-                            <p className="text-xs font-medium text-gray-400">Suggested Actions:</p>
+                            <p className="text-xs font-medium text-gray-400">{t("suggestedActions")}</p>
                             <div className="flex flex-wrap gap-2 pt-2 border-t border-white/10">
                               {msg.suggestions.map((suggestion, sIdx) => (
                                 <button
@@ -466,7 +465,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                           suppressHydrationWarning={true}
                           onClick={() => handleCopy(msg.content, idx)}
                           className="text-gray-400 hover:text-blue-500 transition-colors cursor-pointer"
-                          title="Copy Message"
+                          title={t("copy")}
                         >
                           {copiedId === idx ? <IoMdCheckmark size={12} className="text-green-500" /> : <FaRegCopy size={12} />}
                         </button>
@@ -485,7 +484,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                       <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
                       <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
                     </div>
-                    <span className="text-[10px] font-medium text-gray-500 tracking-widest ml-1">{loadingTexts[loadingStep]}...</span>
+                    <span className="text-[10px] font-medium text-gray-500 tracking-widest ml-1">{t(loadingTextKeys[loadingStep])}...</span>
                   </div>
                 </div>
               </div>
@@ -507,7 +506,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                     handleSubmit(e);
                   }
                 }}
-                placeholder="Type a message..."
+                placeholder={t("typeMessage")}
                 rows={1}
                 autoFocus
                 className="flex-1 bg-transparent outline-none text-sm text-gray-200 placeholder-gray-500 resize-none p-1 max-h-32 scrollbar-none border-none"

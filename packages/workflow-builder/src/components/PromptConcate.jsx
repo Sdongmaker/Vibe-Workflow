@@ -6,6 +6,8 @@ import { IoClose } from "react-icons/io5";
 import { concatModels } from "./utility";
 import { TbArrowMerge } from "react-icons/tb";
 import NodeOptionsMenu from "./NodeOptionsMenu";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const inputHandles = [
   "concatInput",
@@ -25,6 +27,7 @@ const PromptConcate = ({ id, data, selected }) => {
   const runId = data.runId ?? getRunId();
   const nodeSchemas = data.nodeSchemas || {};
   const textareaRef = useRef(null);
+  const { t } = useTranslation("nodes");
   const { setNodes, setEdges } = useReactFlow();
   const updateNodeInternals = useUpdateNodeInternals();
   const edges = useStore((state) => state.edges);
@@ -141,10 +144,10 @@ const PromptConcate = ({ id, data, selected }) => {
   }, [formValues]);
 
   const handleDeleteNode = () => {
-    if (window.confirm(`Are you sure you want to delete this ${id} node?`)) {
+    if (window.confirm(t("confirmDeleteNode", { id }))) {
       setNodes((nds) => nds.filter((n) => n.id !== id));
       setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
-      toast.success(`Deleted node ${id}`);
+      toast.success(t("toastDeletedNode", { id }));
     };
   };
 
@@ -207,7 +210,7 @@ const PromptConcate = ({ id, data, selected }) => {
       `}
     >
       <h3 className="absolute -top-5 left-0 text-zinc-400 text-[10px] font-medium tracking-wider uppercase">
-        Prompt Concatenator {id.replace(/^\D+/g, "")}
+        {t("promptConcatenator")} {id.replace(/^\D+/g, "")}
       </h3>
       <div className="flex flex-col">
         <div className="flex items-center justify-between bg-gradient-to-r from-[#151618] to-[#1c1e21] rounded-t-2xl border-b border-zinc-800 py-2 px-3">
@@ -256,14 +259,14 @@ const PromptConcate = ({ id, data, selected }) => {
             `}
             data-type="blue"
           />
-          <p 
+          <p
             className={`absolute -left-7 top-[100px] text-xs text-blue-500 transition-opacity duration-200 ${
-              data.activeHandleColor === "blue" 
-                ? "opacity-100" 
+              data.activeHandleColor === "blue"
+                ? "opacity-100"
                 : "opacity-0 group-hover:opacity-100"
             }`}
-          > 
-            Text 
+          >
+            {t("text")}
           </p>
         </>
       )}
@@ -286,14 +289,14 @@ const PromptConcate = ({ id, data, selected }) => {
         `}
         data-type="blue"
       />
-      <p 
+      <p
         className={`absolute -right-7 top-[100px] text-xs text-blue-500 transition-opacity duration-200 ${
-          data.activeHandleColor === "blue" 
-            ? "opacity-100" 
+          data.activeHandleColor === "blue"
+            ? "opacity-100"
             : "opacity-0 group-hover:opacity-100"
         }`}
-      > 
-        Text 
+      >
+        {t("text")}
       </p>
     </div>
   );

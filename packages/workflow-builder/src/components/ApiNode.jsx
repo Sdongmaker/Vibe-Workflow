@@ -11,6 +11,8 @@ import { IoClose, IoTrashOutline } from "react-icons/io5";
 import { RiInputMethodLine } from "react-icons/ri";
 import NodeSendButton from "./NodeSendButton";
 import NodeOptionsMenu from "./NodeOptionsMenu";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const outputHandles = [
   "apiOutput",
@@ -37,6 +39,7 @@ const ApiNode = ({ id, data, selected }) => {
   const edges = useStore((state) => state.edges);
   const modelSchema = nodeSchemas?.categories?.api?.models[selectedModel.id];  
   const textareaRef = useRef(null);
+  const { t } = useTranslation("nodes");
 
   useEffect(() => {
     if (data.cost !== 0.025) {
@@ -130,7 +133,7 @@ const ApiNode = ({ id, data, selected }) => {
   
   const fetchSchema = (workflowId) => {
     if (!workflowId) {
-      toast.error("Failed to save workflow before running node");
+      toast.error(t("failedToSave"));
       setLoading(0);
       return;
     }
@@ -367,12 +370,12 @@ const ApiNode = ({ id, data, selected }) => {
 
         if (latest.status === "failed") {
           const outputs = latest?.result?.outputs;
-          let errorMsg = "Generation failed";
+          let errorMsg = t("generationFailed");
 
           if (outputs && outputs[0]?.value?.error) {
             errorMsg = outputs[0].value.error; 
           }
-          toast.error(`Node ${id} failed`);
+          toast.error(t("toastNodeFailed", { id }));
           const currentHistory = data.outputHistory || [];
           data.onDataChange(id, { isLoading: false, errorMsg, outputHistory: currentHistory }); 
           clearInterval(interval);
@@ -389,7 +392,7 @@ const ApiNode = ({ id, data, selected }) => {
 
   const handleRunSingleNode = async () => {
     if (!runId) {
-      toast.error("No run_id available!. Click 'Run All' button");
+      toast.error(t("noRunId"));
       return;
     }
     try {
@@ -397,13 +400,13 @@ const ApiNode = ({ id, data, selected }) => {
       const workflow_id = await data.handleSaveWorkFlow();
 
       if (!workflow_id) {
-        toast.error("Failed to save workflow before running node");
+        toast.error(t("failedToSave"));
         data.onDataChange(id, { isLoading: false });
         return;
       }
 
       if (!modelSchema || !modelSchema.input_schema) {
-        toast.error("No input schema found for this model");
+        toast.error(t("noInputSchema"));
         data.onDataChange(id, { isLoading: false });
         return;
       }
@@ -437,7 +440,7 @@ const ApiNode = ({ id, data, selected }) => {
       pollNodeStatus(response.data.run_id);
     } catch(error) {
       data.onDataChange(id, { isLoading: false });
-      toast.error(error.response?.data?.detail || "Error running node");
+      toast.error(error.response?.data?.detail || t("errorRunningNode"));
       console.error(error);
     };
   };
@@ -463,7 +466,7 @@ const ApiNode = ({ id, data, selected }) => {
     const workflow_id = await data.handleSaveWorkFlow();
 
     if (!workflow_id) {
-      toast.error("Failed to save workflow before running node");
+      toast.error(t("failedToSave"));
       setLoading(0);
       return;
     }
@@ -526,7 +529,7 @@ const ApiNode = ({ id, data, selected }) => {
     const currentHistory = outputHistory[currentHistoryIndex];
     if (!currentHistory || !currentHistory.node_run_id) return;
 
-    if (window.confirm("Are you sure you want to delete this history entry?")) {
+    if (window.confirm(t("confirmDeleteHistory"))) {
       try {
         await axios.delete(`/api/workflow/node-run/${currentHistory.node_run_id}`);
         const newHistory = outputHistory.filter((_, i) => i !== currentHistoryIndex);
@@ -541,9 +544,9 @@ const ApiNode = ({ id, data, selected }) => {
         } else {
           setCurrentHistoryIndex(Math.max(0, currentHistoryIndex - 1));
         }
-        toast.success("History entry deleted");
+        toast.success(t("toastHistoryDeleted"));
       } catch (error) {
-        toast.error(error.response?.data?.detail || "Failed to delete history entry");
+        toast.error(error.response?.data?.detail || t("toastFailedDeleteHistory"));
         console.error(error);
       }
     }
@@ -660,12 +663,12 @@ const ApiNode = ({ id, data, selected }) => {
           <div className="flex items-center justify-center w-full h-full overflow-hidden aspect-[1/1] bg-white/5 animate-pulse rounded-b-2xl">
             <div className="flex flex-col items-center gap-3">
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-[10px] font-bold text-blue-500 tracking-wider uppercase">Processing...</span>
+              <span className="text-[10px] font-bold text-blue-500 tracking-wider uppercase">{t("processing")}</span>
             </div>
           </div>
         ) : data.errorMsg ? (
           <div className="text-red-400 text-xs font-medium p-3 bg-red-500/10 rounded-xl border border-red-500/20 m-3 w-full">
-            {data.errorMsg || "API failure"}
+            {data.errorMsg || t("apiFailure")}
           </div>
         ) : currentOutput && !data.isLoading ? (
           <div className="w-full h-full relative group/api">
@@ -732,7 +735,7 @@ const ApiNode = ({ id, data, selected }) => {
         ) : (
           <div className="flex flex-col items-center justify-center text-zinc-400 gap-2">
             <RiInputMethodLine size={32} />
-            <span className="text-[10px] italic">Result appeared here...</span>
+            <span className="text-[10px] italic">{t("resultHere")}</span>
           </div>
         )}
       </div>    
@@ -740,7 +743,7 @@ const ApiNode = ({ id, data, selected }) => {
         let outputColor = "green";
         let activeClass = "!bg-green-500 !border-white shadow-[0_0_20px_rgba(34,197,94,1)]";
         let inactiveClass = "!bg-black !border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.5)]";
-        let labelText = "Image";
+        let labelText = t("image");
         let labelColor = "text-green-500";
         
         const output = data.outputs?.[0];
@@ -750,25 +753,25 @@ const ApiNode = ({ id, data, selected }) => {
           outputColor = "blue";
           activeClass = "!bg-blue-600 !border-zinc-900 shadow-[0_0_15px_rgba(37,99,235,0.8)]";
           inactiveClass = "!bg-zinc-900 !border-blue-600/50 hover:!border-blue-600 shadow-sm";
-          labelText = "Text";
+          labelText = t("text");
           labelColor = "text-blue-500";
         } else if (output?.type === 'video_url' || modelType === 'video') {
           outputColor = "orange";
           activeClass = "!bg-orange-600 !border-zinc-900 shadow-[0_0_15px_rgba(249,115,22,0.8)]";
           inactiveClass = "!bg-zinc-900 !border-orange-600/50 hover:!border-orange-600 shadow-sm";
-          labelText = "Video";
+          labelText = t("video");
           labelColor = "text-orange-500";
         } else if (output?.type === 'audio_url' || modelType === 'audio') {
           outputColor = "yellow";
           activeClass = "!bg-yellow-500 !border-zinc-900 shadow-[0_0_15px_rgba(234,179,8,0.8)]";
           inactiveClass = "!bg-zinc-900 !border-yellow-500/50 hover:!border-yellow-500 shadow-sm";
-          labelText = "Audio";
+          labelText = t("audio");
           labelColor = "text-yellow-500";
         } else {
           outputColor = "green";
           activeClass = "!bg-emerald-600 !border-zinc-900 shadow-[0_0_15px_rgba(16,185,129,0.8)]";
           inactiveClass = "!bg-zinc-900 !border-emerald-600/50 hover:!border-emerald-600 shadow-sm";
-          labelText = "Image";
+          labelText = t("image");
           labelColor = "text-emerald-500";
         }
 

@@ -16,19 +16,22 @@ import {
 import { TbArrowMerge } from "react-icons/tb";
 import { RiInputMethodLine } from "react-icons/ri";
 import { LuUpload } from "react-icons/lu";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const formatName = (id) => id.replace(/-/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-const SPECIAL_MODEL_NAMES = {
-  "text-passthrough": "Input Text",
-  "image-passthrough": "Input Image",
-  "video-passthrough": "Input Video",
-  "audio-passthrough": "Input Audio",
-};
 
 const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchemas = {} }) => {
   const [activeSubMenu, setActiveSubMenu] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const menuRef = useRef(null);
+  const { t } = useTranslation("nodes");
+  const SPECIAL_MODEL_NAMES = {
+    "text-passthrough": t("inputText"),
+    "image-passthrough": t("inputImage"),
+    "video-passthrough": t("inputVideo"),
+    "audio-passthrough": t("inputAudio"),
+  };
 
   const getNodeTypeFromSubmenuId = (id) => {
     if (id === 'inputs') return ['textNode', 'imageNode', 'videoNode', 'audioNode'];
@@ -123,44 +126,44 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
 
   const menuStructure = [
     {
-      label: "Inputs",
+      label: t("inputs"),
       items: [
-        { label: "Input Models", icon: <LuUpload />, hasSubmenu: true, id: "inputs" },
+        { label: t("inputModels"), icon: <LuUpload />, hasSubmenu: true, id: "inputs" },
       ]
     },
     {
-      label: "Text",
+      label: t("text"),
       items: [
-        { label: "Text (LLMs)", icon: <TfiText />, hasSubmenu: true, id: "text-llms" },
-        { label: "Utilities", icon: <TbArrowMerge className="rotate-90" />, hasSubmenu: true, id: "utilities" },
+        { label: t("textLLMs"), icon: <TfiText />, hasSubmenu: true, id: "text-llms" },
+        { label: t("utilities"), icon: <TbArrowMerge className="rotate-90" />, hasSubmenu: true, id: "utilities" },
       ]
     },
     {
-      label: "Image",
+      label: t("image"),
       items: [
-        { label: "Generate Image", icon: <IoImageOutline />, hasSubmenu: true, id: "generate-image" },
-        { label: "Edit Image", icon: <RiImageAiLine />, hasSubmenu: true, id: "edit-image" },
+        { label: t("generateImage"), icon: <IoImageOutline />, hasSubmenu: true, id: "generate-image" },
+        { label: t("editImage"), icon: <RiImageAiLine />, hasSubmenu: true, id: "edit-image" },
         // { label: "Upscale Image", icon: <MdOutlineImage />, hasSubmenu: true, id: "upscale-image" },
         // { label: "Image Utilities", icon: <MdCrop />, hasSubmenu: true, id: "image-utils" },
       ]
     },
     {
-      label: "Video",
+      label: t("video"),
       items: [
-        { label: "Generate Video", icon: <IoVideocamOutline />, hasSubmenu: true, id: "generate-video" },
-        { label: "Edit Video", icon: <RiVideoOnAiLine />, hasSubmenu: true, id: "edit-video" },
+        { label: t("generateVideo"), icon: <IoVideocamOutline />, hasSubmenu: true, id: "generate-video" },
+        { label: t("editVideo"), icon: <RiVideoOnAiLine />, hasSubmenu: true, id: "edit-video" },
       ]
     },
     {
-      label: "Audio",
+      label: t("audio"),
       items: [
-        { label: "Generate Audio", icon: <AiOutlineAudio />, hasSubmenu: true, id: "generate-audio" },
+        { label: t("generateAudio"), icon: <AiOutlineAudio />, hasSubmenu: true, id: "generate-audio" },
       ]
     },
     {
-      label: "API Models",
+      label: t("apiModels"),
       items: [
-        { label: "Api Node", icon: <RiInputMethodLine />, hasSubmenu: true, id: "api-models" },
+        { label: t("apiNode"), icon: <RiInputMethodLine />, hasSubmenu: true, id: "api-models" },
       ]
     }
   ];
@@ -229,7 +232,7 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
             <span>{item.name}</span>
           </button>
         )) : (
-          <div className="px-3 py-2 text-xs text-gray-500">No results found</div>
+          <div className="px-3 py-2 text-xs text-gray-500">{t("noResults")}</div>
         )}
       </div>
     );
@@ -302,7 +305,7 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
           <AiOutlineSearch className="text-gray-400" />
           <input
             type="search"
-            placeholder="Search nodes or models"
+            placeholder={t("searchNodes")}
             className="w-full h-full py-2 px-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 bg-transparent"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -367,6 +370,7 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
 };
 
 const Submenu = ({ activeSubMenu, menuStructure, getSubmenuItems, handleAddNode, parentRef, onBack }) => {
+  const { t } = useTranslation("nodes");
   const [position, setPosition] = useState({ side: "right", top: 0 });
   const submenuRef = useRef(null);
 
@@ -470,7 +474,7 @@ const Submenu = ({ activeSubMenu, menuStructure, getSubmenuItems, handleAddNode,
             </button>
           ))
         ) : (
-          <div className="px-2 py-4 text-xs text-gray-500 text-center">No items available</div>
+          <div className="px-2 py-4 text-xs text-gray-500 text-center">{t("noItems")}</div>
         )}
       </div>
     </div>

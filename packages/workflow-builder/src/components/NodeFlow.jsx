@@ -42,6 +42,9 @@ import ChatWidget from "./ChatWidget";
 import { AiOutlineAudio } from "react-icons/ai";
 import VideoCombiner from "./VideoCombiner";
 import { useGenerationCost } from "./useGenerationCost";
+import { useTranslation } from "react-i18next";
+import "../i18n";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const nodeTypes = {
   textNode: TextGeneration,
@@ -221,6 +224,7 @@ const processWorkflowData = (workflowData, nodeSchemas, id) => {
 
 const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
   const params = useParams();
+  const { t } = useTranslation("nodes");
   const { id } = params;
 
   // Pre-calculate initial state if data is provided
@@ -234,7 +238,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
   const [loadingNodes, setLoadingNodes] = useState({});
   const [isRunning, setIsRunning] = useState(0);
   const [dropDown, setDropDown] = useState(0);
-  const [workflowName, setWorkflowName] = useState(initialState?.metadata?.workflowName || "Untitled");
+  const [workflowName, setWorkflowName] = useState(initialState?.metadata?.workflowName || t("untitled"));
   const [workflowId, setWorkflowId] = useState(id);
   const [runId, setRunId] = useState(initialState?.metadata?.runId || null);
   const [hasFit, setHasFit] = useState(false);
@@ -275,8 +279,8 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const [workflowCategory, setWorkflowCategory] = useState(initialState?.metadata?.category || "General");
-  const [categoryInput, setCategoryInput] = useState(initialState?.metadata?.category || "General");
+  const [workflowCategory, setWorkflowCategory] = useState(initialState?.metadata?.category || t("general"));
+  const [categoryInput, setCategoryInput] = useState(initialState?.metadata?.category || t("general"));
   const [isCategoryPopupOpen, setIsCategoryPopupOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isModelDropdownUp, setIsModelDropdownUp] = useState(false);
@@ -390,7 +394,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     setWorkflowId(id);
     setRunId(workflowData?.run_id);
     setWorkflowName(workflowData.name);
-    setWorkflowCategory(workflowData?.category || "General");
+    setWorkflowCategory(workflowData?.category || t("general"));
     setWorkflowIds(workflowData.workflow_id, workflowData?.run_id);
     setInteractionMode(workflowData.is_owner);
     setPublishWorkflow(workflowData.is_published);
@@ -1286,7 +1290,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     return {
       workflow_id: interactionMode ? workflowId || null : null,
       source_workflow_id: !interactionMode ? workflowId : null,
-      name: workflowName || "Untitled",
+      name: workflowName || t("untitled"),
       edges: edges,
       data: {
         nodes: nodeData
@@ -1310,9 +1314,9 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     } catch (error) {
       console.log(error);
       if (error.response) {
-        toast.error(`Failed: ${error.response.data.detail || "Server error"}`);
+        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
       } else {
-        toast.error(`Error: ${error.message}`);
+        toast.error(t("toastError", { message: error.message }));
       }
     }
   };
@@ -1330,9 +1334,9 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       console.log(error);
       setIsRunning(0);
       if (error.response) {
-        toast.error(`Failed: ${error.response.data.detail || "Server error"}`);
+        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
       } else {
-        toast.error(`Error: ${error.message}`);
+        toast.error(t("toastError", { message: error.message }));
       }
     }
   };
@@ -1449,7 +1453,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
             setLoadingNodes({});
             setIsRunning(0);
           } else if (anyFailed) {
-            toast.error("Workflow failed on some nodes");
+            toast.error(t("toastWorkflowFailed"));
             clearInterval(interval);
             setLoadingNodes({});
             setIsRunning(0);
@@ -1461,7 +1465,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
           clearInterval(interval);
           setLoadingNodes({});
           setIsRunning(0);
-          toast.error("Failed to get workflow status");
+          toast.error(t("toastFailedStatus"));
         });
     }, 3000);
   };
@@ -1484,9 +1488,9 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     } catch (error) {
       console.log(error);
       if (error.response) {
-        toast.error(`Failed: ${error.response.data.detail || "Server error"}`);
+        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
       } else {
-        toast.error(`Error: ${error.message}`);
+        toast.error(t("toastError", { message: error.message }));
       }
       setLoadingNodes({});
       setIsRunning(0);
@@ -1503,14 +1507,14 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
         publish: !publishWorkflow
       });
       setIsRunning(0);
-      toast.success(response.data.publish ? "Published successfully" : "Unpublished successfully");
+      toast.success(response.data.publish ? t("toastPublished") : t("toastUnpublished"));
       setPublishWorkflow(response.data.publish);
     } catch (error) {
       console.log(error);
       if (error.response) {
-        toast.error(`Failed: ${error.response.data.detail || "Server error"}`);
+        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
       } else {
-        toast.error(`Error: ${error.message}`);
+        toast.error(t("toastError", { message: error.message }));
       }
       setLoadingNodes({});
       setIsRunning(0);
@@ -1528,14 +1532,14 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       });
       const is_template = response.data.is_template;
       setIsRunning(0);
-      toast.success(is_template ? "Published successfully" : "Unpublished successfully");
+      toast.success(is_template ? t("toastPublished") : t("toastUnpublished"));
       setTemplate(prev => ({ ...prev, isPublishedTemplate: is_template }));
     } catch (error) {
       console.log(error);
       if (error.response) {
-        toast.error(`Failed: ${error.response.data.detail || "Server error"}`);
+        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
       } else {
-        toast.error(`Error: ${error.message}`);
+        toast.error(t("toastError", { message: error.message }));
       }
       setIsRunning(0);
     }
@@ -1543,7 +1547,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
 
   const handleCategorySave = async () => {
     if (!workflowId) {
-      toast.error("Workflow ID not found. Save the workflow first.");
+      toast.error(t("toastWorkflowIdNotFound"));
       return;
     }
 
@@ -1554,13 +1558,13 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       console.log("Category updated:", response.data);
       setWorkflowCategory(categoryInput);
       setIsCategoryPopupOpen(false);
-      toast.success("Category updated successfully");
+      toast.success(t("toastCategoryUpdated"));
     } catch (error) {
       console.error("Error updating category:", error);
       if (error.response) {
-        toast.error(`Failed: ${error.response.data.detail || "Server error"}`);
+        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
       } else {
-        toast.error(`Error: ${error.message}`);
+        toast.error(t("toastError", { message: error.message }));
       }
     }
   };
@@ -1614,7 +1618,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     };
 
     setNodes((nds) => nds.map(n => ({ ...n, selected: false })).concat(newNode));
-    toast.success(`Duplicated node ${nodeId} to ${newNodeId}`);
+    toast.success(t("toastDuplicatedNode", { nodeId, newNodeId }));
   }, [nodes, setNodes]);
 
   const nodesWithHandlers = nodes.map((node) => ({
@@ -2093,7 +2097,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       {isRestoring && (
         <div className="fixed inset-0 flex items-center justify-center gap-2 bg-black w-full h-full z-20">
           <div className="w-6 h-6 rounded-full border-[4px] border-white border-t-transparent animate-spin"></div>
-          <div className="text-white text-xl font-bold">Loading...</div>
+          <div className="text-white text-xl font-bold">{t("loading")}</div>
         </div>
       )}
       <div className="flex items-center justify-center absolute top-0 z-20 bg-[#151618] w-full py-3 border-b border-gray-800">
@@ -2112,10 +2116,11 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
               disabled={!interactionMode}
               className="flex items-center gap-2 text-base outline-none text-[#adacaa] hover:text-white cursor-pointer bg-transparent max-w-[90%]"
             >
-              <span className="truncate block w-full">{workflowName ? workflowName : "Untitled"}</span> <FaRegEdit size={14} />
+              <span className="truncate block w-full">{workflowName ? workflowName : t("untitled")}</span> <FaRegEdit size={14} />
             </button>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             {template.showTemplateBtn && (
               <div
                 className="relative"
@@ -2135,7 +2140,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                   onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                   className="flex items-center gap-2 px-4 py-1.5 border border-gray-600/70 bg-white text-black text-sm rounded-full hover:bg-black hover:text-white transition-colors"
                 >
-                  <FaToolbox size={14} /> Settings <FaAngleDown size={12} className={`transition-transform duration-300 ${isSettingsOpen ? "rotate-180" : ""}`} />
+                  <FaToolbox size={14} /> {t("settings")} <FaAngleDown size={12} className={`transition-transform duration-300 ${isSettingsOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {isSettingsOpen && (
@@ -2155,7 +2160,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                       ) : (
                         <LuLayoutTemplate size={16} />
                       )}
-                      <span>{template.isPublishedTemplate ? "Undo Template" : "Make Template"}</span>
+                      <span>{template.isPublishedTemplate ? t("undoTemplate") : t("makeTemplate")}</span>
                     </button>
                     <button
                       type="button"
@@ -2167,7 +2172,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-[#2c3037] hover:text-white transition-colors"
                     >
                       <RiInputMethodLine size={16} />
-                      <span>Category</span>
+                      <span>{t("category")}</span>
                     </button>
                   </div>
                 )}
@@ -2184,11 +2189,11 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                 >
                   {isRunning === 2 ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-t-transparent border-black group-hover:border-white group-hover:border-t-transparent rounded-full animate-spin"></div> Publishing...
+                      <div className="w-4 h-4 border-2 border-t-transparent border-black group-hover:border-white group-hover:border-t-transparent rounded-full animate-spin"></div> {t("publishing")}
                     </>
                   ) : (
                     <>
-                      <FaTelegramPlane size={16} /> {publishWorkflow ? "Unpublish" : "Publish"}
+                      <FaTelegramPlane size={16} /> {publishWorkflow ? t("unpublish") : t("publish")}
                     </>
                   )}
                 </button>
@@ -2201,11 +2206,11 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                 >
                   {isRunning === 1 ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-t-transparent border-black group-hover:border-white group-hover:border-t-transparent rounded-full animate-spin"></div> Running...
+                      <div className="w-4 h-4 border-2 border-t-transparent border-black group-hover:border-white group-hover:border-t-transparent rounded-full animate-spin"></div> {t("running")}
                     </>
                   ) : (
                     <>
-                      <FaPlay size={16} /> Run All {parseFloat(totalWorkflowCost) > 0 && `($${totalWorkflowCost})`}
+                      <FaPlay size={16} /> {t("runAll")} {parseFloat(totalWorkflowCost) > 0 && `($${totalWorkflowCost})`}
                     </>
                   )}
                 </button>
@@ -2220,11 +2225,11 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
               >
                 {isRunning === 3 ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-t-transparent border-black group-hover:border-white group-hover:border-t-transparent rounded-full animate-spin"></div> Duplicating...
+                    <div className="w-4 h-4 border-2 border-t-transparent border-black group-hover:border-white group-hover:border-t-transparent rounded-full animate-spin"></div> {t("duplicating")}
                   </>
                 ) : (
                   <>
-                    <IoDuplicateOutline size={16} /> Duplicate
+                    <IoDuplicateOutline size={16} /> {t("duplicateWorkflow")}
                   </>
                 )}
               </button>
@@ -2236,7 +2241,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
         <button
           type="button"
           suppressHydrationWarning={true}
-          onClick={() => toast.error("This workflow can't be edited.")}
+          onClick={() => toast.error(t("toastWorkflowNotEditable"))}
           className={`p-3 rounded-full bg-white hover:bg-[#1b1e23] cursor-pointer outline-none text-black active:bg-gray-600 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed ${interactionMode && "hidden"}`}
         >
           <MdLockOutline size={18} />

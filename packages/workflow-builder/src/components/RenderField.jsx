@@ -6,8 +6,11 @@ import { FiUpload } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import AudioPlayer from "./AudioPlayer";
 import { IoCloudUploadOutline } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleChange, data, modelName }) => {
+  const { t } = useTranslation("nodes");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dropDown, setDropDown] = useState(-1);
   const [uploading, setUploading] = useState(false);
@@ -23,7 +26,7 @@ const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleCh
   const label = (
     <label className="text-[10px] font-bold text-zinc-500 text-start px-1 mb-1">
       {meta.title || fieldName}
-      {isRequired && <span className="text-blue-500 text-[9px] ml-1">* required</span>}
+      {isRequired && <span className="text-blue-500 text-[9px] ml-1">{t("required")}</span>}
     </label>
   );
 
@@ -57,7 +60,7 @@ const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleCh
         ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif", "video/mp4", "video/webm"];
 
     if (!acceptedTypes.includes(file.type)) {
-      toast.error("Unsupported file type");
+      toast.error(t("unsupportedFileType"));
       return;
     };
 
@@ -98,7 +101,7 @@ const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleCh
     })
     .catch((error) => {
       console.error("Upload failed", error);
-      toast.error("Upload failed.", error?.response?.data);
+      toast.error(t("toastDownloadFailed"));
       setUploading(false);
       setUploadProgress(0);
     })
@@ -187,7 +190,7 @@ const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleCh
             readOnly
             // onChange={(e) => handleChange(fieldName, e.target.value)} 
             className="bg-zinc-900/50 text-white text-xs py-2 px-3 rounded-lg border border-white/10 transition-all hover:border-white/20 w-full outline-none focus:border-blue-500/50" 
-            placeholder="Add a file or provide an URL" 
+            placeholder={t("addFileOrUrl")} 
           />
           {/* <input 
             type="file" 
@@ -358,7 +361,7 @@ const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleCh
       <div key={fieldName} className="flex flex-col gap-1 w-full">
         <label htmlFor={fieldName} className="flex items-center gap-2 text-sm text-white font-medium relative">
           {label}
-          {isRequired && <span className="text-blue-500 text-xs">* required</span>}
+          {isRequired && <span className="text-blue-500 text-xs">{t("required")}</span>}
         </label>
         <div className="flex items-center gap-2 w-full">
           <input 

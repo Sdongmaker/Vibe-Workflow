@@ -13,6 +13,8 @@ import { HiOutlineViewGrid } from "react-icons/hi";
 import NodeSendButton from "./NodeSendButton";
 import NodeOptionsMenu from "./NodeOptionsMenu";
 import { useGenerationCost } from "./useGenerationCost";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const inputHandles = [
   "imageInput",
@@ -50,7 +52,8 @@ const ImageGeneration = ({ id, data, selected }) => {
   const edges = useStore((state) => state.edges);
   const properties = nodeSchemas?.categories?.image?.models?.[selectedModel.id]?.input_schema?.schemas?.input_data?.properties;
   const { generationCost, isRefreshingCost } = useGenerationCost(selectedModel, formValues);
-  
+  const { t } = useTranslation("nodes");
+
   useEffect(() => {
     if (data.cost !== generationCost) {
       data.onDataChange?.(id, { cost: generationCost });
@@ -221,12 +224,12 @@ const ImageGeneration = ({ id, data, selected }) => {
 
         if (latest.status === "failed") {
           const outputs = latest?.result?.outputs;
-          let errorMsg = "Generation failed";
+          let errorMsg = t("generationFailed");
 
           if (outputs && outputs[0]?.value?.error) {
             errorMsg = outputs[0].value.error; 
           }
-          toast.error(`Node ${id} failed`);
+          toast.error(t("toastNodeFailed", { id }));
           
           const currentHistory = data.outputHistory || [];
           data.onDataChange(id, { isLoading: false, errorMsg, outputHistory: currentHistory });
@@ -244,7 +247,7 @@ const ImageGeneration = ({ id, data, selected }) => {
 
   const handleRunSingleNode = async () => {
     if (!runId) {
-      toast.error("No run_id available!. Click 'Run All' button");
+      toast.error(t("noRunId"));
       return;
     }
     try {
@@ -252,14 +255,14 @@ const ImageGeneration = ({ id, data, selected }) => {
       const workflow_id = await data.handleSaveWorkFlow();
 
       if (!workflow_id) {
-        toast.error("Failed to save workflow before running node");
+        toast.error(t("failedToSave"));
         data.onDataChange(id, { isLoading: false });
         return;
       }
 
       const modelSchema = nodeSchemas?.categories?.image?.models[selectedModel.id]?.input_schema?.schemas?.input_data;
       if (!modelSchema || !modelSchema.properties) {
-        toast.error("No input schema found for this model");
+        toast.error(t("noInputSchema"));
         data.onDataChange(id, { isLoading: false });
         return;
       }
@@ -284,16 +287,16 @@ const ImageGeneration = ({ id, data, selected }) => {
       pollNodeStatus(response.data.run_id);
     } catch(error) {
       data.onDataChange(id, { isLoading: false });
-      toast.error(error.response?.data?.detail || "Error running node");
+      toast.error(error.response?.data?.detail || t("errorRunningNode"));
       console.error(error);
     };
   };
 
   const handleDeleteNode = () => {
-    if (window.confirm(`Are you sure you want to delete this ${id} node?`)) {
+    if (window.confirm(t("confirmDeleteNode", { id }))) {
       setNodes((nds) => nds.filter((n) => n.id !== id));
       setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
-      toast.success(`Deleted node ${id}`);
+      toast.success(t("toastDeletedNode", { id }));
     };
   };
 
@@ -375,7 +378,7 @@ const ImageGeneration = ({ id, data, selected }) => {
     const currentHistory = outputHistory[currentHistoryIndex];
     if (!currentHistory || !currentHistory.node_run_id) return;
 
-    if (window.confirm("Are you sure you want to delete this history entry?")) {
+    if (window.confirm(t("confirmDeleteHistory"))) {
       try {
         await axios.delete(`/api/workflow/node-run/${currentHistory.node_run_id}`);
         const newHistory = outputHistory.filter((_, i) => i !== currentHistoryIndex);
@@ -390,9 +393,9 @@ const ImageGeneration = ({ id, data, selected }) => {
         } else {
           setCurrentHistoryIndex(Math.max(0, currentHistoryIndex - 1));
         }
-        toast.success("History entry deleted");
+        toast.success(t("toastHistoryDeleted"));
       } catch (error) {
-        toast.error(error.response?.data?.detail || "Failed to delete history entry");
+        toast.error(error.response?.data?.detail || t("toastFailedDeleteHistory"));
         console.error(error);
       }
     }
@@ -439,21 +442,21 @@ const ImageGeneration = ({ id, data, selected }) => {
   const updateWorkflowThumbnail = async (thumbnail) => {
     const workflow_id = await data.handleSaveWorkFlow();
     if (!workflow_id) {
-      toast.error("Workflow id not found");
+      toast.error(t("toastWorkflowIdNotFound"));
       return;
     }
 
     if (!thumbnail) {
-      toast.error("Thumbnail URL is required");
+      toast.error(t("toastThumbnailRequired"));
       return;
     }
     try { 
       const response = await axios.post(`/api/workflow/${workflow_id}/thumbnail`, { 
         thumbnail 
       });
-      if (response.data.success) toast.success("Cover image updated successfully");
+      if (response.data.success) toast.success(t("toastCoverUpdated"));
     } catch(error) {
-      toast.error(error.response?.data?.detail || "Failed to save thumbnail");
+      toast.error(error.response?.data?.detail || t("toastFailedSaveThumbnail"));
       console.error(error);
     };
   };
@@ -485,7 +488,7 @@ const ImageGeneration = ({ id, data, selected }) => {
               </span>
             ) : (
               <span>
-                {generationCost === 0 ? 'Free' : (`$${generationCost}`)}
+                {generationCost === 0 ? t("free") : (`$${generationCost}`)}
               </span>
             )}
           </span>
@@ -568,12 +571,12 @@ const ImageGeneration = ({ id, data, selected }) => {
             <div className="flex items-center justify-center w-full h-full overflow-hidden aspect-[1/1] bg-white/5 animate-pulse rounded-b-2xl">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-[10px] font-bold text-emerald-500 tracking-wider uppercase">Generating...</span>
+                <span className="text-[10px] font-bold text-emerald-500 tracking-wider uppercase">{t("generating")}</span>
               </div>
             </div>
           ) : data.errorMsg ? (
             <div className="text-red-400 text-xs font-medium p-3 bg-red-500/10 rounded-xl border border-red-500/20 m-3 w-full">
-              {data.errorMsg || "Generation failed"}
+              {data.errorMsg || t("generationFailed")}
             </div>
           ) : currentOutput && !data.isLoading ? (
             <div className="h-full w-full relative group/image">
@@ -612,14 +615,14 @@ const ImageGeneration = ({ id, data, selected }) => {
               <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 pointer-events-none rounded-b-xl flex flex-col justify-end">
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] text-white/50 uppercase tracking-tighter font-semibold">Dimensions</span>
+                    <span className="text-[10px] text-white/50 uppercase tracking-tighter font-semibold">{t("dimensions")}</span>
                     <span className="text-xs text-white font-medium tabular-nums">
                       {imageMetadata.width} × {imageMetadata.height}
                     </span>
                   </div>
                   {imageMetadata.size && (
                     <div className="flex flex-col items-end gap-0.5">
-                      <span className="text-[10px] text-white/50 uppercase tracking-tighter font-semibold">File Size</span>
+                      <span className="text-[10px] text-white/50 uppercase tracking-tighter font-semibold">{t("fileSize")}</span>
                       <span className="text-xs text-white font-medium tabular-nums">{imageMetadata.size}</span>
                     </div>
                   )}
@@ -641,7 +644,7 @@ const ImageGeneration = ({ id, data, selected }) => {
           ) : (
             <div className="flex flex-col items-center justify-center text-zinc-400 gap-2">
               <IoImageOutline size={32} />
-              <span className="text-[10px] italic">Result appeared here...</span>
+              <span className="text-[10px] italic">{t("resultHere")}</span>
             </div>
           )}
         </div>
@@ -668,14 +671,14 @@ const ImageGeneration = ({ id, data, selected }) => {
         data-type="blue"
       />
       {hasPrompt && (
-        <p 
+        <p
           className={`absolute -left-8 top-[100px] text-xs text-blue-500 transition-opacity duration-200 ${
             data.activeHandleColor === "blue"
               ? "opacity-100"
               : "opacity-0 group-hover:opacity-100"
           }`}
-        > 
-          Text 
+        >
+          {t("text")}
         </p>
       )}
       
@@ -700,14 +703,14 @@ const ImageGeneration = ({ id, data, selected }) => {
         data-type="green"
       />
       {hasImagesList && (
-        <p 
+        <p
           className={`absolute -left-10 top-[150px] text-xs text-green-500 transition-opacity duration-200 ${
             data.activeHandleColor === "green"
-              ? "opacity-100" 
+              ? "opacity-100"
               : "opacity-0 group-hover:opacity-100"
           }`}
-        > 
-          Image 
+        >
+          {t("image")}
         </p>
       )}
       
@@ -732,14 +735,14 @@ const ImageGeneration = ({ id, data, selected }) => {
         data-type="green"
       />
       {hasImageUrl && (
-        <p 
+        <p
           className={`absolute -left-10 top-[200px] text-xs text-green-500 transition-opacity duration-200 ${
             data.activeHandleColor === "green"
-              ? "opacity-100" 
+              ? "opacity-100"
               : "opacity-0 group-hover:opacity-100"
           }`}
-        > 
-          Image 
+        >
+          {t("image")}
         </p>
       )}   
       <Handle 
@@ -760,14 +763,14 @@ const ImageGeneration = ({ id, data, selected }) => {
         `}
         data-type="green"
       />
-      <p 
+      <p
         className={`absolute -right-10 top-[100px] text-xs text-green-500 transition-opacity duration-200 ${
           data.activeHandleColor === "green"
-            ? "opacity-100" 
+            ? "opacity-100"
             : "opacity-0 group-hover:opacity-100"
         }`}
-      > 
-        Image 
+      >
+        {t("image")}
       </p>
     </div>
   );

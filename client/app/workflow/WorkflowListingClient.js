@@ -12,9 +12,12 @@ import { SlOptions } from "react-icons/sl";
 import { toast } from "react-hot-toast";
 import { HiOutlineArrowRight } from "react-icons/hi2";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const WorkflowListingClient = ({ initialWorkflowList }) => {
   const router = useRouter();
+  const { t } = useTranslation(["workflow", "common"]);
 
   const [workflowList, setWorkflowList] = useState(initialWorkflowList || []);
   const [loading, setLoading] = useState(false);
@@ -38,7 +41,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response?.data?.error || "Failed to fetch workflows");
+        toast.error(error.response?.data?.error || t("toastFailedFetch"));
         setWorkflowList([]);
       })
       .finally(() => {
@@ -47,26 +50,24 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
   };
 
   const handleDeleteWorkflow = (deleteId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this workflow? This action cannot be undone."
-    );
+    const confirmDelete = window.confirm(t("confirmDelete"));
     if (!confirmDelete) return;
 
     axios.delete(`/api/workflow/delete-workflow-def/${deleteId}`)
       .then(() => {
         setWorkflowList(prev => prev.filter(w => w.id !== deleteId));
         setDropDown(0);
-        toast.success("Workflow deleted successfully");
+        toast.success(t("toastDeleteSuccess"));
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response?.data?.error || "Failed to delete workflow");
+        toast.error(error.response?.data?.error || t("toastFailedDelete"));
       });
   };
 
   const handleRenameWorkflow = (id, newName) => {
     if (!newName.trim()) return;
-    
+
     setLoading(true);
     axios.post(`/api/workflow/update-name/${id}`, { name: newName })
       .then(() => {
@@ -78,12 +79,12 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
               : w
           )
         );
-        toast.success("Workflow renamed");
+        toast.success(t("toastRenameSuccess"));
       })
       .catch((error) => {
         console.error(error);
         setRenameId(null);
-        toast.error(error.response?.data?.error || "Failed to rename workflow");
+        toast.error(error.response?.data?.error || t("toastFailedRename"));
       })
       .finally(() => {
         setLoading(false);
@@ -115,7 +116,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
       .catch((error) => {
         console.error(error);
         setLoading(false);
-        toast.error(error.response?.data?.detail || "Server error");
+        toast.error(error.response?.data?.detail || t("toastServerErr"));
       });
   };
 
@@ -124,11 +125,11 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-12 md:px-12">
         <header className="flex flex-col gap-8 mb-16">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div>
+            <div className="flex items-center gap-4">
               <h1 className="text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-500">
-                Workflows
+                {t("pageName")}
               </h1>
-              <p className="text-zinc-500 mt-2 font-medium">Create and manage your asynchronous AI processing pipelines.</p>
+              <LanguageSwitcher />
             </div>
             <button
               onClick={handleCreateWorkFlow}
@@ -136,7 +137,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
               className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-bold transition-all shadow-[0_15px_30px_-10px_rgba(37,99,235,0.4)] hover:shadow-[0_20px_40px_-8px_rgba(37,99,235,0.5)] active:scale-95 disabled:opacity-50"
             >
               <FaPlus />
-              New Workflow
+              {t("newWorkflow")}
             </button>
           </div>
 
@@ -145,7 +146,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
               type="button"
               className="px-6 py-4 text-sm font-black transition-all whitespace-nowrap border-b-2 uppercase tracking-widest text-blue-500 border-blue-500"
             >
-              My Workflows
+              {t("myWorkflows")}
             </button>
           </div>
         </header>
@@ -153,7 +154,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
         {loading && workflowList.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[400px]">
             <div className="w-10 h-10 border-4 border-white/10 border-t-blue-500 rounded-full animate-spin" />
-            <span className="mt-4 text-zinc-500 font-bold uppercase tracking-widest animate-pulse">Loading Flows...</span>
+            <span className="mt-4 text-zinc-500 font-bold uppercase tracking-widest animate-pulse">{t("loading")}</span>
           </div>
         ) : (
           <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -190,7 +191,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
                       <SlOptions size={16} />
                     </button>
                     {dropDown === work.id && (
-                      <div 
+                      <div
                         className="absolute right-0 mt-2 w-36 py-1 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2"
                         onMouseLeave={() => setDropDown(0)}
                       >
@@ -202,7 +203,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
                           }}
                           className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors"
                         >
-                          <FaRegEdit size={14} /> Rename
+                          <FaRegEdit size={14} /> {t("rename")}
                         </button>
                         <button
                           onClick={(e) => {
@@ -211,7 +212,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
                           }}
                           className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
                         >
-                          <FiTrash2 size={14} /> Delete
+                          <FiTrash2 size={14} /> {t("delete")}
                         </button>
                       </div>
                     )}
@@ -219,24 +220,24 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
 
                   <div className="absolute bottom-0 left-0 w-full p-6 pt-12 bg-gradient-to-t from-[#030303] to-transparent flex flex-col gap-1 pointer-events-none">
                     <h4 className={`text-base font-black truncate uppercase tracking-tight transition-colors ${work.thumbnail ? "text-white group-hover:text-blue-400" : "text-zinc-300 group-hover:text-white"}`}>
-                      {work.name || "Untitled Flow"}
+                      {work.name || t("untitledFlow")}
                     </h4>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">
-                        Updated {formatDateTime(work.updated_at)}
+                        {t("updated")} {formatDateTime(work.updated_at)}
                       </span>
                     </div>
                   </div>
                 </div>
               ))}
-              
+
               {workflowList.length === 0 && !loading && (
                  <div className="col-span-full py-24 border-2 border-dashed border-white/5 rounded-3xl flex flex-col items-center justify-center text-center bg-white/[0.01]">
                     <div className="p-6 bg-white/5 rounded-full mb-6">
                       <GoWorkflow size={48} className="text-zinc-700" />
                     </div>
-                    <h2 className="text-xl font-black text-white uppercase tracking-widest mb-2">No Private Flows</h2>
-                    <p className="text-zinc-500 mb-8 max-w-xs font-medium">Start your first orchestration by clicking the button above.</p>
+                    <h2 className="text-xl font-black text-white uppercase tracking-widest mb-2">{t("noPrivateFlows")}</h2>
+                    <p className="text-zinc-500 mb-8 max-w-xs font-medium">{t("noPrivateFlowsDesc")}</p>
                  </div>
               )}
             </div>
@@ -245,21 +246,21 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
       </div>
 
       {renameId && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 animate-in fade-in duration-300"
           onClick={() => setRenameId(null)}
         >
-          <div 
+          <div
             className="w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col gap-6">
               <div className="text-center">
-                <h3 className="text-xl font-black uppercase tracking-widest text-white">Rename Flow</h3>
-                <p className="text-zinc-500 text-xs font-bold mt-1 uppercase tracking-tighter">Choose a descriptive identity</p>
+                <h3 className="text-xl font-black uppercase tracking-widest text-white">{t("renameFlow")}</h3>
+                <p className="text-zinc-500 text-xs font-bold mt-1 uppercase tracking-tighter">{t("renameIdentity")}</p>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-1">New Identity</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-1">{t("newIdentity")}</label>
                 <input
                   type="text"
                   value={workflowName}
@@ -276,13 +277,13 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
                   onClick={() => setRenameId(null)}
                   className="flex-1 py-3 px-4 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 font-black uppercase tracking-widest text-xs transition-all"
                 >
-                  Discard
+                  {t("discard")}
                 </button>
                 <button
                   onClick={() => handleRenameWorkflow(renameId, workflowName)}
                   className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-xs transition-all shadow-lg"
                 >
-                  Commit changes
+                  {t("commitChanges")}
                 </button>
               </div>
             </div>

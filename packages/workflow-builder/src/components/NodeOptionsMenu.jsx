@@ -4,6 +4,8 @@ import { IoDuplicateOutline, IoTrashOutline } from "react-icons/io5";
 import { MdOutlineFileDownload } from "react-icons/md";
 import { HiOutlinePhotograph } from "react-icons/hi";
 import { downloadFile } from "./utility";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const NodeOptionsMenu = ({ 
   nodeId, 
@@ -15,6 +17,7 @@ const NodeOptionsMenu = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const { t } = useTranslation("nodes");
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -55,7 +58,7 @@ const NodeOptionsMenu = ({
             className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-medium text-zinc-300 hover:bg-white/5 hover:text-white transition-colors border-b border-white/5"
           >
             <IoDuplicateOutline size={14} className="text-blue-400" />
-            <span>Duplicate</span>
+            <span>{t("duplicate")}</span>
           </button>
 
           {downloadUrl && (
@@ -70,7 +73,7 @@ const NodeOptionsMenu = ({
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-medium text-zinc-300 hover:bg-white/5 hover:text-white transition-colors border-b border-white/5"
             >
               <MdOutlineFileDownload size={14} className="text-emerald-400" />
-              <span>Download</span>
+              <span>{t("download")}</span>
             </button>
           )}
 
@@ -86,7 +89,7 @@ const NodeOptionsMenu = ({
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-medium text-zinc-300 hover:bg-white/5 hover:text-white transition-colors border-b border-white/5"
             >
               <HiOutlinePhotograph size={14} className="text-purple-400" />
-              <span>Set Thumbnail</span>
+              <span>{t("setThumbnail")}</span>
             </button>
           )}
 
@@ -101,7 +104,7 @@ const NodeOptionsMenu = ({
             className="w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-medium text-red-400 hover:bg-red-500/10 hover:text-red-500 transition-colors"
           >
             <IoTrashOutline size={14} />
-            <span>Delete Node {nodeId}</span>
+            <span>{t("deleteNode", { id: nodeId })}</span>
           </button>
         </div>
       )}

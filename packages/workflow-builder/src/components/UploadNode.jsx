@@ -5,12 +5,15 @@ import axios from "axios";
 import AudioPlayer from "./AudioPlayer";
 import VideoPlayer from "./VideoPlayer";
 import { IoImageOutline, IoTrashOutline } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loading, uploadType, acceptType }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [imageMetadata, setImageMetadata] = useState({ width: 0, height: 0, size: null });
   const videoRef = useRef(null);
+  const { t } = useTranslation("nodes");
   const prevFormValues = useRef(formValues);
 
   const handleDrop = (e) => {
@@ -43,7 +46,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
     const type = file.type.startsWith("video") ? "video_url" : file.type.startsWith("image") ? "image_url": "audio_url";
     
     if (!acceptedTypes.includes(file.type)) {
-      toast.error(`Please upload a valid ${acceptType} file`);
+      toast.error(t("unsupportedFileType"));
       return;
     };
 
@@ -79,7 +82,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
     })
     .catch((error) => {
       console.error("Upload failed", error);
-      toast.error("Upload failed.", error?.response?.data);
+      toast.error(t("toastDownloadFailed"));
       setUploading(false);
       setUploadProgress(0);
     })  
@@ -202,7 +205,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
           <textarea
             ref={textareaRef}
             className="bg-transparent border border-gray-800 w-full h-full max-h-96 p-2 text-xs text-white resize-none overflow-y-auto custom-scrollbar"
-            placeholder="Enter your text prompt here..."
+            placeholder={t("enterTextPrompt")}
             value={formValues?.prompt || ""}
             onChange={handleTextChange}
           />
@@ -213,7 +216,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
           >
             {uploading ? (
               <div className="flex flex-col justify-center gap-2 w-full h-full max-w-[95%]">
-                <h4 className="text-xs text-white">Uploading... {uploadProgress}%</h4>
+                <h4 className="text-xs text-white">{t("uploading", { progress: uploadProgress })}</h4>
                 <div className="w-full bg-gray-100 rounded h-1 overflow-hidden">
                   <div className="bg-blue-500 h-full" style={{ width: `${uploadProgress}%` }}></div>
                 </div>
@@ -237,14 +240,14 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
                     <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 pointer-events-none flex flex-col justify-end">
                       <div className="flex items-center justify-between">
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-[10px] text-white/50 uppercase tracking-tighter font-semibold">Dimensions</span>
+                          <span className="text-[10px] text-white/50 uppercase tracking-tighter font-semibold">{t("dimensions")}</span>
                           <span className="text-xs text-white font-medium tabular-nums">
                             {imageMetadata.width} × {imageMetadata.height}
                           </span>
                         </div>
                         {imageMetadata.size && (
                           <div className="flex flex-col items-end gap-0.5">
-                            <span className="text-[10px] text-white/50 uppercase tracking-tighter font-semibold">File Size</span>
+                            <span className="text-[10px] text-white/50 uppercase tracking-tighter font-semibold">{t("fileSize")}</span>
                             <span className="text-xs text-white font-medium tabular-nums">{imageMetadata.size}</span>
                           </div>
                         )}
@@ -274,8 +277,8 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
                 style={{ minHeight: 200 }} 
                 className="cursor-pointer flex flex-col items-center justify-center gap-2 text-gray-400 border border-dashed border-gray-600 rounded-lg p-4 w-full flex-1 hover:bg-gray-700/50 h-full"
               >                <FiUpload size={20} />
-                <span className="text-xs capitalize">Upload {acceptType}</span>
-                <span className="text-xs text-gray-500">Hint: drag and drop file(s) here.</span>
+                <span className="text-xs capitalize">{t("uploadBtn", { type: acceptType })}</span>
+                <span className="text-xs text-gray-500">{t("dragDropHint")}</span>
                 <input
                   type="file"
                   accept={acceptType === "image" ? "image/*": acceptType === "video" ? "video/*": "audio/*"}

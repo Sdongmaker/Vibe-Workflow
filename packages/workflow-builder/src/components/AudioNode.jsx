@@ -16,6 +16,8 @@ import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import NodeSendButton from "./NodeSendButton";
 import NodeOptionsMenu from "./NodeOptionsMenu";
 import { useGenerationCost } from "./useGenerationCost";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const inputHandles = [
   "audioInput",
@@ -53,7 +55,8 @@ const AudioGeneration = ({ id, data, selected }) => {
   const edges = useStore((state) => state.edges);
   const properties = nodeSchemas?.categories?.audio?.models?.[selectedModel.id]?.input_schema?.schemas?.input_data?.properties;
   const { generationCost, isRefreshingCost } = useGenerationCost(selectedModel, formValues);
-  
+  const { t } = useTranslation("nodes");
+
   useEffect(() => {
     if (data.cost !== generationCost) {
       data.onDataChange?.(id, { cost: generationCost });
@@ -226,12 +229,12 @@ const AudioGeneration = ({ id, data, selected }) => {
 
         if (latest.status === "failed") {
           const outputs = latest?.result?.outputs;
-          let errorMsg = "Generation failed";
+          let errorMsg = t("generationFailed");
 
           if (outputs && outputs[0]?.value?.error) {
             errorMsg = outputs[0].value.error; 
           }
-          toast.error(`Node ${id} failed`);
+          toast.error(t("toastNodeFailed", { id }));
           const currentHistory = data.outputHistory || [];
           data.onDataChange(id, { isLoading: false, errorMsg, outputHistory: currentHistory });
           clearInterval(interval);
@@ -248,7 +251,7 @@ const AudioGeneration = ({ id, data, selected }) => {
 
   const handleRunSingleNode = async () => {
     if (!runId) {
-      toast.error("No run_id available!. Click 'Run All' button");
+      toast.error(t("noRunId"));
       return;
     };
 
@@ -257,14 +260,14 @@ const AudioGeneration = ({ id, data, selected }) => {
       const workflow_id = await data.handleSaveWorkFlow();
 
       if (!workflow_id) {
-        toast.error("Failed to save workflow before running node");
+        toast.error(t("failedToSave"));
         data.onDataChange(id, { isLoading: false });
         return;
       }
 
       const modelSchema = nodeSchemas?.categories?.audio?.models[selectedModel.id]?.input_schema?.schemas?.input_data;
       if (!modelSchema || !modelSchema.properties) {
-        toast.error("No input schema found for this model");
+        toast.error(t("noInputSchema"));
         data.onDataChange(id, { isLoading: false });
         return;
       }
@@ -289,7 +292,7 @@ const AudioGeneration = ({ id, data, selected }) => {
       pollNodeStatus(response.data.run_id);
     } catch(error) {
       data.onDataChange(id, { isLoading: false });
-      toast.error(error.response?.data?.detail || "Error running node");
+      toast.error(error.response?.data?.detail || t("errorRunningNode"));
       console.error(error);
     };
   };
@@ -363,7 +366,7 @@ const AudioGeneration = ({ id, data, selected }) => {
     const currentHistory = outputHistory[currentHistoryIndex];
     if (!currentHistory || !currentHistory.node_run_id) return;
 
-    if (window.confirm("Are you sure you want to delete this history entry?")) {
+    if (window.confirm(t("confirmDeleteHistory"))) {
       try {
         await axios.delete(`/api/workflow/node-run/${currentHistory.node_run_id}`);
         const newHistory = outputHistory.filter((_, i) => i !== currentHistoryIndex);
@@ -378,9 +381,9 @@ const AudioGeneration = ({ id, data, selected }) => {
         } else {
           setCurrentHistoryIndex(Math.max(0, currentHistoryIndex - 1));
         }
-        toast.success("History entry deleted");
+        toast.success(t("toastHistoryDeleted"));
       } catch (error) {
-        toast.error(error.response?.data?.detail || "Failed to delete history entry");
+        toast.error(error.response?.data?.detail || t("toastFailedDeleteHistory"));
         console.error(error);
       }
     }
@@ -440,7 +443,7 @@ const AudioGeneration = ({ id, data, selected }) => {
               </span>
             ) : (
               <span>
-                {generationCost === 0 ? 'Free' : (`$${generationCost}`)}
+                {generationCost === 0 ? t("free") : (`$${generationCost}`)}
               </span>
             )}
           </span>
@@ -521,12 +524,12 @@ const AudioGeneration = ({ id, data, selected }) => {
             <div className="flex items-center justify-center w-full h-full overflow-hidden aspect-[1/1] bg-white/5 animate-pulse rounded-b-2xl">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-[10px] font-bold text-yellow-500 tracking-wider uppercase">Generating...</span>
+                <span className="text-[10px] font-bold text-yellow-500 tracking-wider uppercase">{t("generating")}</span>
               </div>
             </div>
           ) : data.errorMsg ? (
             <div className="text-red-400 text-xs font-medium p-3 bg-red-500/10 rounded-xl border border-red-500/20 m-3 w-full">
-              {data.errorMsg || "Generation failed"}
+              {data.errorMsg || t("generationFailed")}
             </div>
           ) : currentOutput && !data.isLoading ? (
             <div className="w-full h-full relative group/audio flex flex-col items-center justify-center">
@@ -568,7 +571,7 @@ const AudioGeneration = ({ id, data, selected }) => {
           ) : (
             <div className="flex flex-col items-center justify-center text-zinc-400 gap-2">
               <AiOutlineAudio size={32} />
-              <span className="text-[10px] italic">Result appeared here...</span>
+              <span className="text-[10px] italic">{t("resultHere")}</span>
             </div>
           )}
         </div>
@@ -600,13 +603,13 @@ const AudioGeneration = ({ id, data, selected }) => {
               ? "opacity-100" 
               : "opacity-0 group-hover:opacity-100"
           }`}
-        > 
-          Audio 
+        >
+          {t("audio")}
         </p>
       )}
-      <Handle 
-        type="target" 
-        position={Position.Left} 
+      <Handle
+        type="target"
+        position={Position.Left}
         id="audioInput2" 
         style={{ 
           top: 100,
@@ -631,13 +634,13 @@ const AudioGeneration = ({ id, data, selected }) => {
               ? "opacity-100" 
               : "opacity-0 group-hover:opacity-100"
           }`}
-        > 
-          Text 
+        >
+          {t("text")}
         </p>
       )}
-      <Handle 
-        type="target" 
-        position={Position.Left} 
+      <Handle
+        type="target"
+        position={Position.Left}
         id="audioInput3" 
         style={{ 
           top: 130,
@@ -662,13 +665,13 @@ const AudioGeneration = ({ id, data, selected }) => {
               ? "opacity-100" 
               : "opacity-0 group-hover:opacity-100"
           }`}
-        > 
-          Image 
+        >
+          {t("image")}
         </p>
       )}
-      <Handle 
-        type="target" 
-        position={Position.Left} 
+      <Handle
+        type="target"
+        position={Position.Left}
         id="audioInput4"
         style={{ 
           top: 160,
@@ -693,12 +696,12 @@ const AudioGeneration = ({ id, data, selected }) => {
               ? "opacity-100" 
               : "opacity-0 group-hover:opacity-100"
           }`}
-        > 
-          Video
+        >
+          {t("video")}
         </p>
       )}
-      <Handle 
-        type="source" 
+      <Handle
+        type="source"
         position={Position.Right} 
         id="audioOutput" 
         style={{ 
@@ -721,8 +724,8 @@ const AudioGeneration = ({ id, data, selected }) => {
             ? "opacity-100" 
             : "opacity-0 group-hover:opacity-100"
         }`}
-      > 
-        Audio 
+      >
+        {t("audio")}
       </p>
     </div>
   );
