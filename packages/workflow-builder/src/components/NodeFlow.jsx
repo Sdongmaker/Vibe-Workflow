@@ -134,10 +134,10 @@ const iconMap = {
 };
 
 const SPECIAL_MODEL_NAMES = {
-  "text-passthrough": "Input Text",
-  "image-passthrough": "Input Image",
-  "video-passthrough": "Input Video",
-  "audio-passthrough": "Input Audio",
+  "text-passthrough": "inputText",
+  "image-passthrough": "inputImage",
+  "video-passthrough": "inputVideo",
+  "audio-passthrough": "inputAudio",
 };
 
 const formatName = (id) => id.replace(/-/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -217,7 +217,7 @@ const processWorkflowData = (workflowData, nodeSchemas, id) => {
         showTemplateBtn: workflowData.show_temp_button,
         isPublishedTemplate: workflowData.is_template,
       },
-      category: workflowData?.category || "General"
+      category: workflowData?.category || null
     }
   };
 };
@@ -830,7 +830,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
 
           const newAgentMessage = {
             role: "agent",
-            content: message || "Tasks complete. Your workflow has been updated.",
+            content: message || t("tasksComplete"),
             suggestions: suggestions || [],
             timestamp: new Date().toISOString()
           };
@@ -928,14 +928,14 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
           setIsChatLoading(false);
         } else if (status === "failed") {
           clearInterval(interval);
-          throw new Error("Architect processing failed");
+          throw new Error(t("architectFailed"));
         }
       } catch (error) {
         clearInterval(interval);
         console.error("Polling error:", error);
         const errorMessage = {
           role: "agent",
-          content: "Sorry, I encountered an error while updating your workflow.",
+          content: t("errorUpdatingWorkflow"),
           timestamp: new Date().toISOString()
         };
         setChatMessages((prev) => [...prev, errorMessage]);
@@ -973,7 +973,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       console.error("Error sending message:", error);
       const errorMessage = {
         role: "agent",
-        content: "Sorry, I encountered an error processing your request.",
+        content: t("errorProcessingRequest"),
         timestamp: new Date().toISOString()
       };
       setChatMessages((prev) => [...prev, errorMessage]);
@@ -1314,7 +1314,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     } catch (error) {
       console.log(error);
       if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
+        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
       } else {
         toast.error(t("toastError", { message: error.message }));
       }
@@ -1334,7 +1334,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       console.log(error);
       setIsRunning(0);
       if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
+        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
       } else {
         toast.error(t("toastError", { message: error.message }));
       }
@@ -1434,7 +1434,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
               });
               setNodes((prevNodes) => prevNodes.map(n => {
                 if (n.id === id) {
-                  return { ...n, data: { ...n.data, isLoading: false, errorMsg: "Generation Failed" } };
+                  return { ...n, data: { ...n.data, isLoading: false, errorMsg: t("generationFailed") } };
                 }
                 return n;
               }));
@@ -1488,7 +1488,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     } catch (error) {
       console.log(error);
       if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
+        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
       } else {
         toast.error(t("toastError", { message: error.message }));
       }
@@ -1512,7 +1512,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     } catch (error) {
       console.log(error);
       if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
+        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
       } else {
         toast.error(t("toastError", { message: error.message }));
       }
@@ -1537,7 +1537,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     } catch (error) {
       console.log(error);
       if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
+        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
       } else {
         toast.error(t("toastError", { message: error.message }));
       }
@@ -1562,7 +1562,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     } catch (error) {
       console.error("Error updating category:", error);
       if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || "Server error" }));
+        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
       } else {
         toast.error(t("toastError", { message: error.message }));
       }
@@ -2296,7 +2296,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
           </button>
           {dropDown === 4 && (
             <div className="absolute left-14 top-0 bg-[#1b1e23] border border-gray-700 p-3 rounded-lg flex flex-col gap-2 w-52">
-              <h3 className="w-full text-center text-sm text-gray-300">Utility Node</h3>
+              <h3 className="w-full text-center text-sm text-gray-300">{t("utilityNode")}</h3>
               <div className="flex flex-col gap-2 w-full">
                 <button
                   type="button"
@@ -2304,7 +2304,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                   onClick={() => addNode("concatNode", null, { selectedModel: concatModels[0] })}
                   className="flex gap-2 justify-center items-center py-3 px-4 text-white cursor-pointer bg-[#2c3037] rounded hover:bg-[#212326]"
                 >
-                  <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">Prompt Concatenator</span>
+                  <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">{t("promptConcatenator")}</span>
                 </button>
                 <button
                   type="button"
@@ -2312,7 +2312,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                   onClick={() => addNode("vidConcatNode", null, { selectedModel: videoCombinerModels[0] })}
                   className="flex gap-2 justify-center items-center py-3 px-4 text-white cursor-pointer bg-[#2c3037] rounded hover:bg-[#212326]"
                 >
-                  <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">Video Combiner</span>
+                  <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">{t("videoCombiner")}</span>
                 </button>
               </div>
             </div>
@@ -2423,7 +2423,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
             &#10005;
           </button>
           <div className="flex flex-col gap-4 h-full w-full">
-            <h3 className="text-base font-semibold text-center text-white mt-6 tracking-tight">Properties</h3>
+            <h3 className="text-base font-semibold text-center text-white mt-6 tracking-tight">{t("properties")}</h3>
             <h1 className="flex items-center gap-2 text-sm font-medium text-start text-white mx-4 bg-zinc-800/50 border border-white/5 rounded-xl px-3 py-2 transition-all">
               {selectedNode.id.startsWith("text") ? <TfiText className="text-blue-400" /> : selectedNode.id.startsWith("image") ? <IoImageOutline className="text-green-400" /> : selectedNode.id.startsWith("video") ? <IoVideocamOutline className="text-orange-400" /> : selectedNode.id.startsWith("audio") ? <AiOutlineAudio className="text-yellow-400" /> : <RiInputMethodLine className="text-purple-400" />}
               {selectedNode.id.replace(/(\D+)(\d+)/, "$1 $2").replace(/^./, (c) => c.toUpperCase())}
@@ -2442,7 +2442,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                   }}
                   tabIndex={0}
                 >
-                  <label className="text-[10px] font-bold text-zinc-500 text-start px-1">Model</label>
+                  <label className="text-[10px] font-bold text-zinc-500 text-start px-1">{t("model")}</label>
                   <button
                     type="button"
                     suppressHydrationWarning={true}
@@ -2459,7 +2459,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                         type="search"
                         value={modelSearch}
                         onChange={(e) => setModelSearch(e.target.value)}
-                        placeholder="Search models..."
+                        placeholder={t("searchModels")}
                         className="px-3 py-2 text-xs bg-black/40 border border-white/5 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50 transition-all"
                       />
                       <div className="flex flex-col overflow-y-auto">
@@ -2477,7 +2477,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                                 setModelSearch("");
                               }}
                             >
-                              <h2 className="text-sm whitespace-nowrap">{model.name}</h2>
+                              <h2 className="text-sm whitespace-nowrap">{SPECIAL_MODEL_NAMES[model.id] ? t(SPECIAL_MODEL_NAMES[model.id]) : model.name}</h2>
                               {selectedNode?.data?.selectedModel?.id === model.id && (
                                 <FaCheck size={12} className="ml-auto" />
                               )}
@@ -2485,7 +2485,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                           ))
                         ) : (
                           <p className="text-xs text-gray-400 text-center py-2">
-                            No models found
+                            {t("noModelsFound")}
                           </p>
                         )}
                       </div>
@@ -2501,7 +2501,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                     return selectedNode?.data?.loading === 1 ? (
                       <div className="flex flex-col items-center justify-center gap-2 h-full w-full">
                         <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-xs text-white">Fetching model...</span>
+                        <span className="text-xs text-white">{t("fetchingModel")}</span>
                       </div>
                     ) : selectedNode.type === "apiNode" ? (
                       <div className="flex flex-col gap-2 w-full h-full relative pt-2">
@@ -2513,9 +2513,9 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                           className="absolute top-0 z-10 text-[10px] font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 group disabled:cursor-not-allowed rounded-full text-white bg-blue-600 px-3 py-1 border border-blue-500/50 hover:bg-blue-500 transition-all self-end shadow-lg shadow-blue-900/20"
                         >
                           {selectedNode?.data?.loading === 1 ? (
-                            <><div className="w-3 h-3 rounded-full border border-t-transparent group-hover:border-t-transparent border-black group-hover:border-white animate-spin"></div>Generating...</>
+                            <><div className="w-3 h-3 rounded-full border border-t-transparent group-hover:border-t-transparent border-black group-hover:border-white animate-spin"></div>{t("generating")}</>
                           ) : (
-                            <>Fetch Model</>
+                            <>{t("fetchModel")}</>
                           )}
                         </button>
                         {Object.entries(selectedNode?.data?.taskData || {}).map(([key, meta], idx) => {
@@ -2632,13 +2632,13 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                       }).filter(Boolean)
                     ) : (
                       <div className="text-center py-8">
-                        <p className="text-sm text-gray-400">No properties available</p>
+                        <p className="text-sm text-gray-400">{t("noPropertiesAvailable")}</p>
                       </div>
                     );
                   })()
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-sm text-gray-400">Please select a model first</p>
+                    <p className="text-sm text-gray-400">{t("pleaseSelectModelFirst")}</p>
                   </div>
                 )}
               </div>
@@ -2646,7 +2646,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
             <div className="p-4 flex flex-col gap-3">
               {/* Make Output Toggle */}
               <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-xs text-gray-300 font-medium">Mark as Output</span>
+                <span className="text-xs text-gray-300 font-medium">{t("markAsOutput")}</span>
                 <div className="relative">
                   <input
                     type="checkbox"
@@ -2685,17 +2685,17 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                   className="text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 group disabled:cursor-not-allowed rounded-lg text-white bg-blue-500 px-4 py-2 border border-blue-500/50 hover:bg-blue-600 w-full transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
                 >
                   {loadingNodes[selectedNode.id] ? (
-                    <><div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>Generating...</>
+                    <><div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>{t("generating")}</>
                   ) : (
                     <>
                       <FaPlay size={16} /> 
-                      Generate
+                      {t("generate")}
                       {generationCost !== null && (
                         <span className="text-xs font-medium">
                           {isRefreshingCost ? (
                             <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block align-middle"></div>
                           ) : (
-                            generationCost === 0 ? 'Free' : `$${generationCost}`
+                            generationCost === 0 ? t("free") : `$${generationCost}`
                           )}
                         </span>
                       )}
@@ -2730,15 +2730,15 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
         onClick={() => setDropDown(0)}
       >
         <div className="bg-[#242629] rounded-lg p-4 w-72 shadow-lg flex flex-col gap-4" onClick={(e) => e.stopPropagation()}>
-          <h3 className="text-base text-center font-semibold text-white">Save Workflow</h3>
+          <h3 className="text-base text-center font-semibold text-white">{t("saveWorkflow")}</h3>
           <div className="flex flex-col gap-2 w-full">
-            <label className="text-xs text-start text-gray-300">Workflow Name</label>
+            <label className="text-xs text-start text-gray-300">{t("workflowName")}</label>
             <input
               type="text"
               value={workflowName}
               autoFocus
               onChange={(e) => setWorkflowName(e.target.value)}
-              placeholder="Enter Workflow Name"
+              placeholder={t("enterWorkflowName")}
               className="border border-gray-700 px-2 py-1.5 text-sm text-white rounded bg-transparent w-full"
             />
           </div>
@@ -2749,7 +2749,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
               onClick={() => setDropDown(0)}
               className="px-4 py-2 bg-gray-700/50 text-white rounded-full text-sm hover:bg-gray-600/50 transition w-full cursor-pointer"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="button"
@@ -2757,7 +2757,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
               onClick={handleSaveWorkFlow}
               className="px-4 py-2 bg-white text-black rounded-full hover:bg-blue-500 hover:text-white transition w-full text-sm cursor-pointer"
             >
-              Save
+              {t("save")}
             </button>
           </div>
         </div>
@@ -2766,8 +2766,8 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
         <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
           <div className="pointer-events-auto flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-300 transform scale-90 md:scale-100 overflow-y-auto custom-scrollbar max-w-[90%] max-h-[80%] p-10">
             <div className="flex flex-col items-center gap-2 bg-black/40 backdrop-blur-md px-6 py-3 rounded-lg border border-white/10 shadow-xl">
-              <h2 className="text-xl font-semibold text-white tracking-tight">Select a Workflow</h2>
-              <p className="text-xs text-gray-400 font-medium uppercase tracking-widest">or start from scratch</p>
+              <h2 className="text-xl font-semibold text-white tracking-tight">{t("selectWorkflow")}</h2>
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-widest">{t("orStartFromScratch")}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {presets.map((preset) => (
@@ -2781,7 +2781,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                   <div className="z-10 p-2 bg-[#242629] border-b border-gray-700 flex items-center px-3 justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${preset.id === "empty-workflow" ? "bg-gray-400" : "bg-blue-500"}`}></div>
-                      <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">{preset.id === "empty-workflow" ? "NEW" : "PRESET"}</span>
+                      <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">{preset.id === "empty-workflow" ? t("new") : t("preset")}</span>
                     </div>
                     <div className="flex gap-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
@@ -2818,7 +2818,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
               onClick={() => setIsPresetsDismissed(true)}
               className="mt-4 px-5 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 text-xs text-gray-300 font-medium transition-colors border border-gray-700 hover:border-gray-500"
             >
-              Dismiss & Enter Empty Canvas
+              {t("dismissEnterEmptyCanvas")}
             </button>
           </div>
         </div>
@@ -2837,15 +2837,15 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-[#1b1e23] border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Edit Workflow Category</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t("editWorkflowCategory")}</h3>
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs text-gray-400 uppercase tracking-wider">Category Name</label>
+                  <label className="text-xs text-gray-400 uppercase tracking-wider">{t("categoryName")}</label>
                   <input
                     type="text"
                     value={categoryInput}
                     onChange={(e) => setCategoryInput(e.target.value)}
-                    placeholder="Enter category..."
+                    placeholder={t("enterCategory")}
                     className="w-full px-4 py-3 bg-[#151618] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:border-gray-600 transition-all"
                     autoFocus
                   />
@@ -2859,7 +2859,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                 onClick={() => setIsCategoryPopupOpen(false)}
                 className="px-6 py-2.5 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-all"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 type="button"
@@ -2868,7 +2868,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                 className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-95"
               >
                 <MdSave size={18} />
-                Save Category
+                {t("saveCategory")}
               </button>
             </div>
           </div>

@@ -205,13 +205,13 @@ const ApiNode = ({ id, data, selected }) => {
           }));
         }
       } else {
-        toast.warn(`No schema found for id: ${id}`);
+        toast.warn(t("noSchemaForId", { id }));
       }
       setLoading(0);
     })
       .catch((error) => {
       setLoading(0);
-      toast.error(error.response?.data?.detail || "Failed to fetch model details.");
+      toast.error(error.response?.data?.detail || t("failedToFetchModelDetails"));
       console.error(error);
     })
   };
@@ -385,7 +385,7 @@ const ApiNode = ({ id, data, selected }) => {
         console.log(error);
         clearInterval(interval);
         data.onDataChange(id, { isLoading: false });
-        toast.error(`Failed to get workflow status Api ${id.replace(/^\D+/g, "")}`);
+        toast.error(t("toastFailedStatusNode", { node: `Api ${id.replace(/^\D+/g, "")}` }));
       });
     }, 3000);
   };
@@ -446,10 +446,10 @@ const ApiNode = ({ id, data, selected }) => {
   };
 
   const handleDeleteNode = () => {
-    if (window.confirm(`Are you sure you want to delete this ${id} node?`)) {
+    if (window.confirm(t("confirmDeleteNode", { id }))) {
       setNodes((nds) => nds.filter((n) => n.id !== id));
       setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
-      toast.success(`Deleted node ${id}`);
+      toast.success(t("toastDeletedNode", { id }));
     };
   };
 
@@ -458,7 +458,7 @@ const ApiNode = ({ id, data, selected }) => {
     const missingFields = requiredFields.filter(field => !formValues?.[field] || !formValues[field].trim());
 
     if (missingFields.length > 0) {
-      toast.error(`${missingFields} required before fetching schema`);
+      toast.error(t("requiredBeforeFetchingSchema", { fields: missingFields.join(", ") }));
       return;
     }
 
@@ -611,7 +611,7 @@ const ApiNode = ({ id, data, selected }) => {
                 onClick={handlePrev}
                 disabled={currentHistoryIndex <= 0}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                title="Previous"
+                title={t("previous")}
               >
                 <FaAngleLeft size={10} />
               </button>
@@ -625,7 +625,7 @@ const ApiNode = ({ id, data, selected }) => {
                   suppressHydrationWarning={true}
                   onClick={handleDeleteHistory}
                   className="p-1 hover:bg-red-500/10 rounded-full text-zinc-400 hover:text-red-500 transition-colors flex items-center justify-center"
-                  title="Delete history"
+                  title={t("deleteHistory")}
                 >
                   <IoTrashOutline size={10} />
                 </button>
@@ -644,7 +644,7 @@ const ApiNode = ({ id, data, selected }) => {
                 onClick={handleNext}
                 disabled={currentHistoryIndex >= outputHistory.length - 1}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                title="Next"
+                title={t("next")}
               >
                 <FaAngleRight size={10} />
               </button>

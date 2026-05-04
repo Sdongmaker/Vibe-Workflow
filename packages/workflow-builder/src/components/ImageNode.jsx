@@ -240,7 +240,7 @@ const ImageGeneration = ({ id, data, selected }) => {
         console.log(error);
         clearInterval(interval);
         data.onDataChange(id, { isLoading: false });
-        toast.error(`Failed to get workflow status Image ${id.replace(/^\D+/g, "")}`);
+        toast.error(t("toastFailedStatusNode", { node: `${t("image")} ${id.replace(/^\D+/g, "")}` }));
       });
     }, 3000);
   };
@@ -478,7 +478,7 @@ const ImageGeneration = ({ id, data, selected }) => {
       )}
       <div className="flex items-center gap-2 absolute -top-5 left-0">
         <h3 className="text-zinc-400 text-[10px] font-medium tracking-wider uppercase">
-          Image {id.replace(/^\D+/g, "")}
+          {t("image")} {id.replace(/^\D+/g, "")}
         </h3>
         {generationCost !== null && !selectedModel?.id.includes("passthrough") && (
           <span className="text-xs text-green-500 -mt-0.5 font-medium flex items-center gap-1 opacity-80">
@@ -512,7 +512,7 @@ const ImageGeneration = ({ id, data, selected }) => {
                 onClick={handlePrev}
                 disabled={currentHistoryIndex <= 0}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                title="Previous"
+                title={t("previous")}
               >
                 <FaAngleLeft size={10} />
               </button>
@@ -526,7 +526,7 @@ const ImageGeneration = ({ id, data, selected }) => {
                   suppressHydrationWarning={true}
                   onClick={handleDeleteHistory}
                   className="p-1 hover:bg-red-500/10 rounded-full text-zinc-400 hover:text-red-500 transition-colors flex items-center justify-center"
-                  title="Delete history"
+                  title={t("deleteHistory")}
                 >
                   <IoTrashOutline size={10} />
                 </button>
@@ -545,7 +545,7 @@ const ImageGeneration = ({ id, data, selected }) => {
                 onClick={handleNext}
                 disabled={currentHistoryIndex >= outputHistory.length - 1}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                title="Next"
+                title={t("next")}
               >
                 <FaAngleRight size={10} />
               </button>

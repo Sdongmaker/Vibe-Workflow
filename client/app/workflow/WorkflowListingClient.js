@@ -2,7 +2,6 @@
 
 import axios from "axios";
 import Link from "next/link";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa6";
@@ -10,14 +9,11 @@ import { FiTrash2 } from "react-icons/fi";
 import { GoWorkflow } from "react-icons/go";
 import { SlOptions } from "react-icons/sl";
 import { toast } from "react-hot-toast";
-import { HiOutlineArrowRight } from "react-icons/hi2";
-import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const WorkflowListingClient = ({ initialWorkflowList }) => {
-  const router = useRouter();
-  const { t } = useTranslation(["workflow", "common"]);
+  const { t, i18n } = useTranslation(["workflow", "common"]);
 
   const [workflowList, setWorkflowList] = useState(initialWorkflowList || []);
   const [loading, setLoading] = useState(false);
@@ -94,17 +90,18 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
   const formatDateTime = (isoString) => {
     if (!isoString) return "";
     const date = new Date(isoString);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: '2-digit'
+    const locale = i18n.language?.toLowerCase().startsWith("zh") ? "zh-CN" : "en-GB";
+    return date.toLocaleDateString(locale, {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
     });
   };
 
   const handleCreateWorkFlow = () => {
     const workflowPayload = {
       workflow_id: null,
-      name: "Untitled Workflow",
+      name: t("newWorkflowDefaultName"),
       edges: [],
       data: { nodes: [] },
     };
@@ -126,19 +123,24 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
         <header className="flex flex-col gap-8 mb-16">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <h1 className="text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-500">
-                {t("pageName")}
-              </h1>
-              <LanguageSwitcher />
+              <div className="flex flex-col gap-2">
+                <h1 className="text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-500">
+                  {t("pageName")}
+                </h1>
+                <p className="max-w-2xl text-sm text-zinc-400">{t("pageDescription")}</p>
+              </div>
             </div>
-            <button
-              onClick={handleCreateWorkFlow}
-              disabled={loading}
-              className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-bold transition-all shadow-[0_15px_30px_-10px_rgba(37,99,235,0.4)] hover:shadow-[0_20px_40px_-8px_rgba(37,99,235,0.5)] active:scale-95 disabled:opacity-50"
-            >
-              <FaPlus />
-              {t("newWorkflow")}
-            </button>
+            <div className="flex items-center gap-3">
+              <LanguageSwitcher />
+              <button
+                onClick={handleCreateWorkFlow}
+                disabled={loading}
+                className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-bold transition-all shadow-[0_15px_30px_-10px_rgba(37,99,235,0.4)] hover:shadow-[0_20px_40px_-8px_rgba(37,99,235,0.5)] active:scale-95 disabled:opacity-50"
+              >
+                <FaPlus />
+                {t("newWorkflow")}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-1 border-b border-white/10 w-full overflow-x-auto no-scrollbar">

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import i18n from "../i18n";
 
 export const imageModels = [
   {
@@ -823,7 +824,7 @@ export const apiNodeModels = [
 
 export const downloadFile = async (file_url, filename = "download") => {
   if (!file_url) {
-    toast.error("File URL not found");
+    toast.error(i18n.t("toastFileUrlNotFound", { ns: "nodes" }));
     return;
   }
 
@@ -850,7 +851,7 @@ export const downloadFile = async (file_url, filename = "download") => {
     window.URL.revokeObjectURL(url);
   } catch (err) {
     console.error("Download failed:", err);
-    toast.error("Download failed");
+    toast.error(i18n.t("toastDownloadFailed", { ns: "nodes" }));
   }
 };
 

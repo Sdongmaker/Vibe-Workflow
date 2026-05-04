@@ -8,8 +8,11 @@ import AudioPlayer from "./AudioPlayer";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { Handle, Position } from "reactflow";
 import { TbBoxModel2, TbExternalLink } from "react-icons/tb";
+import { useTranslation } from "react-i18next";
+import "../i18n";
 
 const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handleChange, hasHandle = false, exposedHandles = [], onToggleHandle }) => {
+  const { t } = useTranslation("nodes");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dropDown, setDropDown] = useState(-1);
   const [uploading, setUploading] = useState(false);
@@ -33,7 +36,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
     <div className="flex items-center justify-between w-full group/label">
       <label htmlFor={fieldName} className="text-xs font-bold text-zinc-500 text-start flex-grow cursor-pointer">
         {fieldName}
-        {isRequired && <span className="text-blue-500 text-[9px] ml-1">* required</span>}
+        {isRequired && <span className="text-blue-500 text-[9px] ml-1">{t("required")}</span>}
       </label>
       {onToggleHandle && (
         <button
@@ -41,7 +44,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
           suppressHydrationWarning={true}
           onClick={(e) => { e.stopPropagation(); onToggleHandle(fieldName); }}
           className={`p-1 rounded-lg transition-all group-hover/label:opacity-100 h-6 w-6 flex items-center justify-center ${exposedHandles.includes(fieldName) ? "text-blue-500 bg-blue-500/10 opacity-100" : "text-zinc-500 hover:text-white hover:bg-white/5 opacity-0"}`}
-          title={exposedHandles.includes(fieldName) ? "Remove input" : "Set as input"}
+          title={exposedHandles.includes(fieldName) ? t("removeInput") : t("setAsInput")}
         >
           <TbExternalLink size={14} />
         </button>
@@ -75,7 +78,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
         ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif", "video/mp4", "video/webm"];
 
     if (!acceptedTypes.includes(file.type)) {
-      toast.error("Unsupported file type");
+      toast.error(t("unsupportedFileType"));
       return;
     };
 
@@ -116,7 +119,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
     })
     .catch((error) => {
       console.error("Upload failed", error);
-      toast.error("Upload failed.", error?.response?.data);
+      toast.error(error?.response?.data || t("toastUploadFailed"));
       setUploading(false);
       setUploadProgress(0);
     })
@@ -175,7 +178,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
                 value={value}
                 onChange={(e) => handleChange(fieldName, e.target.value)}
                 onFocus={() => setDropDown(idx + 1)}
-                placeholder="Select or type..."
+                placeholder={t("selectOrType")}
                 className="flex-grow text-xs text-white bg-transparent outline-none px-2 py-[5px] w-full"
               />
             ) : (
@@ -240,7 +243,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
                 </button>
               ))
             ) : (
-              <div className="text-gray-500 text-xs p-2 text-center">No options found</div>
+              <div className="text-gray-500 text-xs p-2 text-center">{t("noOptionsFound")}</div>
             )}
           </div>
         </div>
@@ -268,7 +271,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
             readOnly
             // onChange={(e) => handleChange(fieldName, e.target.value)} 
             className="bg-zinc-900/50 text-white text-xs py-2 px-3 rounded-lg border border-white/10 hover:border-white/20 transition-all w-full outline-none focus:border-blue-500/50" 
-            placeholder="Add a file or provide an URL" 
+            placeholder={t("addFileOrUrl")} 
           />
           {/* <input 
             type="file" 
@@ -304,7 +307,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
         {formValues[fieldName] && (
           <div className="flex items-center gap-2 relative group overflow-hidden self-start w-full">
             {isImageField || isImageUrl(value) ? (
-              <img src={value} alt="Preview" className="w-24 h-24 object-cover border border-white/10 rounded-xl shadow-lg" width={0} height={0} />
+              <img src={value} alt={t("preview")} className="w-24 h-24 object-cover border border-white/10 rounded-xl shadow-lg" width={0} height={0} />
             ) : isVideoField ? (
               <video src={value} className="w-24 h-24 object-cover border border-white/10 rounded-xl shadow-lg" />
             ) : isAudioField && (
@@ -341,7 +344,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
         )}
         <div className="flex items-center justify-between">
           {label}
-          {meta.maxItems && <span className="text-xs text-gray-400">max items: {meta.maxItems}</span>}
+          {meta.maxItems && <span className="text-xs text-gray-400">{t("maxItems", { count: meta.maxItems })}</span>}
         </div>
         <div className="grid grid-cols-3 gap-2">
           {imageList.map((url, idx) => (
@@ -349,7 +352,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
               {isImageUrl(url) ? (
                 <img 
                   src={url} 
-                  alt="Preview" 
+                  alt={t("preview")} 
                   className="w-full h-full aspect-[1/1] object-cover border border-gray-500 rounded" 
                 />
               ) : (url.includes('.mp4') || url.includes('.webm')) && (

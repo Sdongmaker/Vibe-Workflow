@@ -19,7 +19,7 @@ export default function Home() {
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.4)]">
             <GoWorkflow className="text-white" size={20} />
           </div>
-          <span>Workflow<span className="text-blue-500">Pro</span></span>
+          <span>{t("workflowPro", { ns: "common" })}</span>
         </div>
         <div className="flex items-center gap-3">
           <LanguageSwitcher />

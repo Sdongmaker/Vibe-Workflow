@@ -216,7 +216,7 @@ const VideoCombiner = ({ id, data, selected }) => {
 
         if (latest.status === "failed") {
           const outputs = latest?.result?.outputs;
-          let errorMsg = "Generation failed";
+          let errorMsg = t("generationFailed");
           if (outputs && outputs[0]?.value?.error) {
             errorMsg = outputs[0].value.error; 
           }
@@ -420,7 +420,7 @@ const VideoCombiner = ({ id, data, selected }) => {
               </span>
             ) : (
               <span>
-                {generationCost === 0 ? 'Free' : (`$${generationCost}`)}
+                {generationCost === 0 ? t("free") : (`$${generationCost}`)}
               </span>
             )}
           </span>
@@ -444,7 +444,7 @@ const VideoCombiner = ({ id, data, selected }) => {
                 onClick={handlePrev}
                 disabled={currentHistoryIndex <= 0}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                title="Previous"
+                title={t("previous")}
               >
                 <FaAngleLeft size={10} />
               </button>
@@ -458,7 +458,7 @@ const VideoCombiner = ({ id, data, selected }) => {
                   suppressHydrationWarning={true}
                   onClick={handleDeleteHistory}
                   className="p-1 hover:bg-red-500/10 rounded-full text-zinc-400 hover:text-red-500 transition-colors flex items-center justify-center"
-                  title="Delete history"
+                  title={t("deleteHistory")}
                 >
                   <IoTrashOutline size={10} />
                 </button>
@@ -477,7 +477,7 @@ const VideoCombiner = ({ id, data, selected }) => {
                 onClick={handleNext}
                 disabled={currentHistoryIndex >= outputHistory.length - 1}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                title="Next"
+                title={t("next")}
               >
                 <FaAngleRight size={10} />
               </button>
@@ -514,7 +514,7 @@ const VideoCombiner = ({ id, data, selected }) => {
         ) : (
           <div className="flex flex-col items-center justify-center text-zinc-400 gap-2">
             <IoVideocamOutline size={32} />
-            <span className="text-[10px] italic">Result appeared here...</span>
+            <span className="text-[10px] italic">{t("resultHere")}</span>
           </div>
         )}
       </div>
@@ -541,7 +541,7 @@ const VideoCombiner = ({ id, data, selected }) => {
       />
       {hasVideosList && (
         <p className={`absolute -left-10 top-[100px] text-xs text-orange-500 transition-opacity duration-200 ${data.activeHandleColor === "orange" ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
-          Videos
+          {t("videos")}
         </p>
       )}
 
@@ -564,7 +564,7 @@ const VideoCombiner = ({ id, data, selected }) => {
         data-type="orange"
       />
       <p className={`absolute -right-10 top-[100px] text-xs text-orange-500 transition-opacity duration-200 ${data.activeHandleColor === "orange" ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
-        Video 
+        {t("video")}
       </p>
     </div>
   );
