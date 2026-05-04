@@ -2,18 +2,32 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import i18n from "../i18n";
 
+const tNode = (key, defaultValue) => i18n.t(key, { ns: "nodes", defaultValue });
+
+const presetCopyDefaults = {
+  presetImageInitialPrompt: "Ultra-detailed cinematic portrait of a futuristic AI engineer inside a holographic command center. Floating transparent UI panels, glowing blue and violet data streams, reflective surfaces, soft rim lighting, shallow depth of field, realistic skin texture, high-end sci-fi film aesthetic, 8K resolution, photorealistic, dramatic contrast, clean futuristic design.",
+  presetImageEditPrompt: "Enhance the lighting to be more cinematic with stronger rim light and subtle volumetric fog. Increase contrast and depth, add more glowing holographic elements around the subject, slightly darken the background for focus, improve facial realism and sharpness, maintain photorealistic style and premium sci-fi mood.",
+  presetVideoMotionPrompt: "Animate the scene with slow cinematic camera movement, subtle parallax, and smooth forward motion. Holographic elements gently pulse and shift, light rays move naturally through fog, floating structures subtly rotate, ultra-smooth transitions, realistic motion blur, film-grade animation, cinematic pacing, premium tech showcase style.",
+  presetVideoImagePrompt: "Wide cinematic shot of a glowing futuristic city built from floating geometric shapes and holographic panels. Neon blue and purple lights, soft volumetric fog, reflective surfaces, dramatic sky, ultra-realistic lighting, depth of field, 8K detail, sci-fi cinematic style, symmetrical composition.",
+  presetAudioPrompt: "Generate a cinematic ambient soundscape with deep atmospheric pads, soft evolving synth textures, subtle low-frequency pulses, and gentle high-end shimmer. The mood should feel futuristic, calm, and inspirational, suitable for a high-end AI product or cinematic workflow reveal. Clean mix, professional sound design, smooth transitions, no abrupt sounds.",
+  presetCaptionPrompt: "Provide a detailed prompt of this image, capturing as many elements as possible. Include specifics about the colors, textures, any people or objects present, and the setting. Describe the atmosphere, any notable features or interactions, and the overall mood of the scene.",
+  presetCaptionExampleOutput: "A cinematic sci‑fi cityscape at golden hour. A lone explorer stands on the edge of a jagged cliff, gazing out over a vast megacity that rises above a sea of low-lying clouds. The foreground cliff is dark, rough rock with cracks and tufts of green grass and small wildflowers along the edge. The explorer wears a rugged, modern space/terrain suit with a backpack and gear; their silhouette is a quiet, contemplative figure framed against the glowing city. The city below and around is a dense forest of skyscrapers of varying shapes and heights, all made of glass and metal. Neon accents run along many surfaces: turquoise and teal vertical lines glow along several towers, red and magenta edge lights highlight upper contours, and cyan geometric strips trace architectural grooves. The central cluster features a pair of towering, illuminated monoliths with bright cyan highlights and antennae that reach into the sky. Other buildings have curved, multi-tiered silhouettes and reflective façades that catch the sunset and neon alike. A veil of mist and fog hangs around the lower levels, softening edges and lending a dreamlike scale to the city.\n\nIn the sky, several sleek flying vehicles streak by, leaving luminous trails—white and pale yellow from some, magenta and purple from others—adding dynamic motion and depth. The trails glow against a sky that shifts from warm sunset golds and oranges near the horizon to cool deep blues higher up, with scattered, sunlit clouds that glow with a honeyed, amber tint. The sun is low on the left, casting long, warm rays across the cliff and creating a gentle rim light on the explorer, while the city glows with cooler neon against the fading daylight. The overall atmosphere is awe-inspiring, adventurous, and slightly otherworldly—a moment of solitary exploration at the edge of a technologically advanced but fragile-looking metropolis. \n\nSuggested prompt (condensed for reuse):\nHyperreal cinematic sci‑fi city at golden hour. A lone explorer in a rugged space/terrain suit stands on the edge of a jagged cliff, overlooking a megacity rising from a sea of clouds. Tall glass towers with teal/cyan neon lines and red/magenta edge lights dominate the skyline; central twin towers glow with cyan accents. A warm sunset gradient—gold, orange, pink—meets cool neon reflections on glass. Flying vehicles streak across the sky, leaving white, yellow, and magenta light trails. Foreground cliff is rough rock with sparse grasses; mist swirls around the lower city, hiding the bases. The mood is awe-inspiring, adventurous, and otherworldly, with a sense of solitary discovery. Ultra-detailed, 8k, cinematic concept art, 16:9, high dynamic range, volumetric fog, soft lens flare from the sun.",
+};
+
+const presetCopy = (key) => tNode(key, presetCopyDefaults[key]);
+
 export const imageModels = [
   {
     id: "image-passthrough",
-    name: "Input Image",
+    get name() { return tNode("inputImage", "Input Image"); },
     input_params: {
       properties: {
         "image_url": {
           "examples": [],
-          "description": "URL of the input image.",
+          get description() { return tNode("imageUrlDesc", "URL of the input image."); },
           "field": "image",
           "type": "string",
-          "title": "Image URL",
+          get title() { return tNode("imageUrl", "Image URL"); },
           "name": "image_url"
         },
       },
@@ -230,15 +244,15 @@ export const imageModels = [
 export const videoModels = [
   {
     id: "video-passthrough",
-    name: "Input Video",
+    get name() { return tNode("inputVideo", "Input Video"); },
     input_params: {
       properties: {
         "video_url": {
           "examples": [],
-          "description": "URL of the input video.",
+          get description() { return tNode("videoUrlDesc", "URL of the input video."); },
           "field": "video",
           "type": "string",
-          "title": "Video URL",
+          get title() { return tNode("videoUrl", "Video URL"); },
           "name": "video_url"
         },
       },
@@ -552,16 +566,16 @@ export const videoModels = [
 export const textModels = [
   {
     id: "text-passthrough",
-    name: "Input Text",
+    get name() { return tNode("inputText", "Input Text"); },
     input_params: {
       properties: {
         "prompt": {
           "examples": [
             ""
           ],
-          "description": "Text prompt describing the image.",
+          get description() { return tNode("promptDesc", "Text prompt describing the image."); },
           "type": "string",
-          "title": "Prompt",
+          get title() { return tNode("prompt", "Prompt"); },
           "name": "prompt"
         }
       },
@@ -593,15 +607,15 @@ export const textModels = [
 export const audioModels = [
   {
     id: "audio-passthrough",
-    name: "Input Audio",
+    get name() { return tNode("inputAudio", "Input Audio"); },
     input_params: {
       properties: {
         "audio_url": {
           "examples": [],
-          "description": "URL of the input audio.",
+          get description() { return tNode("audioUrlDesc", "URL of the input audio."); },
           "field": "audio",
           "type": "string",
-          "title": "Audio URL",
+          get title() { return tNode("audioUrl", "Audio URL"); },
           "name": "audio_url"
         },
       },
@@ -643,16 +657,16 @@ export const audioModels = [
 export const concatModels = [
   {
     id: "prompt-concatenator",
-    name: "Prompt Concatenator",
+    get name() { return tNode("promptConcatenator", "Prompt Concatenator"); },
     input_params: {
       properties: {
         "prompt": {
           "examples": [
             ""
           ],
-          "description": "Text prompt describing the image.",
+          get description() { return tNode("promptDesc", "Text prompt describing the image."); },
           "type": "string",
-          "title": "Prompt",
+          get title() { return tNode("prompt", "Prompt"); },
           "name": "prompt"
         }
       },
@@ -664,20 +678,20 @@ export const concatModels = [
 export const videoCombinerModels = [
   {
     id: "video-combiner",
-    name: "Video Combiner",
+    get name() { return tNode("videoCombiner", "Video Combiner"); },
     input_params: {
       properties: {
         "videos_list": {
           "examples": [
             "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/seedance-v2.0-i2v.mp4"
           ],
-          "description": "Upload the video clips you want to combine, in order. Each clip can be 5–60 seconds.",
+          get description() { return tNode("videoClipsDesc", "Upload the video clips you want to combine, in order. Each clip can be 5–60 seconds."); },
           "field": "videos_list",
           "type": "array",
           "items": {
             "type": "string"
           },
-          "title": "Video Clips",
+          get title() { return tNode("videoClips", "Video Clips"); },
           "name": "videos_list",
           "maxItems": 20
         },
@@ -692,11 +706,11 @@ export const videoCombinerModels = [
             "21:9",
             "9:21"
           ],
-          "title": "Aspect Ratio",
+          get title() { return tNode("aspectRatio", "Aspect Ratio"); },
           "name": "aspect_ratio",
           "type": "string",
           "default": "auto",
-          "description": "Output aspect ratio. 'auto' uses the aspect ratio of the first uploaded clip."
+          get description() { return tNode("aspectRatioDesc", "Output aspect ratio. 'auto' uses the aspect ratio of the first uploaded clip."); }
         }
       },
       required: ["videos_list"],
@@ -719,7 +733,7 @@ export const apiNodeModels = [
         },
         "api_key": {
           "examples": "",
-          "description": "API Key of the wavespeed ai.",
+          get description() { return tNode("wavespeedApiKeyDesc", "API Key of the wavespeed ai."); },
           "type": "string",
           "format": "text",
           "required": true
@@ -735,7 +749,7 @@ export const apiNodeModels = [
       properties: {
         "model_name": {
           "enum": [],
-          "description": "Name of the model (e.g. sd-xl)",
+          get description() { return tNode("straicoModelNameDesc", "Name of the model (e.g. sd-xl)"); },
           "type": "string",
           "default": "",
           "required": true
@@ -743,13 +757,13 @@ export const apiNodeModels = [
         "model_type": {
           "enum": ["chat", "image", "video", "audio"],
           "default": "chat",
-          "description": "Type of the model (e.g. chat, image, video, audio)",
+          get description() { return tNode("straicoModelTypeDesc", "Type of the model (e.g. chat, image, video, audio)"); },
           "type": "string",
           "required": true
         },
         "api_key": {
           "examples": "",
-          "description": "API Key for Straico.",
+          get description() { return tNode("straicoApiKeyDesc", "API Key for Straico."); },
           "type": "string",
           "format": "text",
           "required": true
@@ -764,21 +778,21 @@ export const apiNodeModels = [
     input_params: {
       properties: {
         "api_key": {
-          "description": "Runware API Key",
+          get description() { return tNode("runwareApiKeyDesc", "Runware API Key"); },
           "type": "string",
           "format": "text",
           "required": true
         },
         "task_type": {
           "enum": ["imageInference", "textToVideo", "imageToVideo", "upscale", "removeBackground"],
-          "description": "Task type (e.g. imageInference, textToVideo, imageToVideo, upscale)",
+          get description() { return tNode("runwareTaskTypeDesc", "Task type (e.g. imageInference, textToVideo, imageToVideo, upscale)"); },
           "type": "string",
           "default": "imageInference",
           "required": true
         },
         "model_name": {
           "enum": [],
-          "description": "AIR identifier of the model",
+          get description() { return tNode("runwareAirModelIdDesc", "AIR identifier of the model"); },
           "type": "string",
           "default": "",
           "required": false
@@ -793,25 +807,25 @@ export const apiNodeModels = [
     input_params: {
       properties: {
         "uid": {
-          "description": "Your GenVR User ID",
+          get description() { return tNode("genvrUserIdDesc", "Your GenVR User ID"); },
           "type": "string",
           "format": "text",
           "required": true
         },
         "api_key": {
-          "description": "GenVR API Key",
+          get description() { return tNode("genvrApiKeyDesc", "GenVR API Key"); },
           "type": "string",
           "format": "text",
           "required": true
         },
         "category": {
-          "description": "Model category (e.g. imagegen)",
+          get description() { return tNode("genvrModelCategoryDesc", "Model category (e.g. imagegen)"); },
           "type": "string",
           "format": "text",
           "required": true
         },
         "subcategory": {
-          "description": "Model identifier (e.g. flux_dev)",
+          get description() { return tNode("genvrModelIdentifierDesc", "Model identifier (e.g. flux_dev)"); },
           "type": "string",
           "format": "text",
           "required": true
@@ -858,7 +872,7 @@ export const downloadFile = async (file_url, filename = "download") => {
 export const presets = [
   {
     id: "empty-workflow",
-    title: "Empty Workflow",
+    get title() { return tNode("presetEmpty", "Empty Workflow"); },
     description: "",
     icon: "plus",
     image: "",
@@ -867,8 +881,8 @@ export const presets = [
   },
   {
     id: "image-generator",
-    title: "Image Generator & Editor",
-    description: "Simple text to image Generation and Editing with Wan 2.5",
+    get title() { return tNode("presetImageGen", "Image Generator & Editor"); },
+    get description() { return tNode("presetImageGenDesc", "Simple text to image Generation and Editing with Wan 2.5"); },
     icon: "image",
     image: "https://cdn.muapi.ai/outputs/e53f9cb2caf947f790154dada58a426c.jpg",
     nodes: [
@@ -878,18 +892,18 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            name: "Input Text"
+            get name() { return tNode("inputText", "Input Text"); }
           },
           formValues: {
-            prompt: "Ultra-detailed cinematic portrait of a futuristic AI engineer inside a holographic command center. Floating transparent UI panels, glowing blue and violet data streams, reflective surfaces, soft rim lighting, shallow depth of field, realistic skin texture, high-end sci-fi film aesthetic, 8K resolution, photorealistic, dramatic contrast, clean futuristic design."
+            get prompt() { return presetCopy("presetImageInitialPrompt"); }
           },
           outputs: [
             {
               type: "text",
-              value: "Ultra-detailed cinematic portrait of a futuristic AI engineer inside a holographic command center. Floating transparent UI panels, glowing blue and violet data streams, reflective surfaces, soft rim lighting, shallow depth of field, realistic skin texture, high-end sci-fi film aesthetic, 8K resolution, photorealistic, dramatic contrast, clean futuristic design."
+              get value() { return presetCopy("presetImageInitialPrompt"); }
             }
           ],
-          resultUrl: "Ultra-detailed cinematic portrait of a futuristic AI engineer inside a holographic command center. Floating transparent UI panels, glowing blue and violet data streams, reflective surfaces, soft rim lighting, shallow depth of field, realistic skin texture, high-end sci-fi film aesthetic, 8K resolution, photorealistic, dramatic contrast, clean futuristic design."
+          get resultUrl() { return presetCopy("presetImageInitialPrompt"); }
         },
         type: "textNode"
       },
@@ -902,7 +916,7 @@ export const presets = [
             name: "Wan 2.5 Text to Image",
           },
           formValues: {
-            prompt: "Ultra-detailed cinematic portrait of a futuristic AI engineer inside a holographic command center. Floating transparent UI panels, glowing blue and violet data streams, reflective surfaces, soft rim lighting, shallow depth of field, realistic skin texture, high-end sci-fi film aesthetic, 8K resolution, photorealistic, dramatic contrast, clean futuristic design.",
+            get prompt() { return presetCopy("presetImageInitialPrompt"); },
             width: 1024,
             height: 1024,
           },
@@ -922,18 +936,18 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            name: "Input Text"
+            get name() { return tNode("inputText", "Input Text"); }
           },
           formValues: {
-            prompt: "Enhance the lighting to be more cinematic with stronger rim light and subtle volumetric fog. Increase contrast and depth, add more glowing holographic elements around the subject, slightly darken the background for focus, improve facial realism and sharpness, maintain photorealistic style and premium sci-fi mood."
+            get prompt() { return presetCopy("presetImageEditPrompt"); }
           },
           outputs: [
             {
               type: "text",
-              value: "Enhance the lighting to be more cinematic with stronger rim light and subtle volumetric fog. Increase contrast and depth, add more glowing holographic elements around the subject, slightly darken the background for focus, improve facial realism and sharpness, maintain photorealistic style and premium sci-fi mood."
+              get value() { return presetCopy("presetImageEditPrompt"); }
             }
           ],
-          resultUrl: "Enhance the lighting to be more cinematic with stronger rim light and subtle volumetric fog. Increase contrast and depth, add more glowing holographic elements around the subject, slightly darken the background for focus, improve facial realism and sharpness, maintain photorealistic style and premium sci-fi mood."
+          get resultUrl() { return presetCopy("presetImageEditPrompt"); }
         },
         type: "textNode"
       },
@@ -946,7 +960,7 @@ export const presets = [
             name: "Wan 2.5 Image Edit",
           },
           formValues: {
-            prompt: "Enhance the lighting to be more cinematic with stronger rim light and subtle volumetric fog. Increase contrast and depth, add more glowing holographic elements around the subject, slightly darken the background for focus, improve facial realism and sharpness, maintain photorealistic style and premium sci-fi mood.",
+            get prompt() { return presetCopy("presetImageEditPrompt"); },
             images_list: [
               "https://cdn.muapi.ai/outputs/8c6c1863ae594cb99e82884f5d3de058.jpg"
             ],
@@ -993,8 +1007,8 @@ export const presets = [
   },
   {
     id: "video-generator",
-    title: "Video Generator",
-    description: "Simple Video Generation with Seedance Lite",
+    get title() { return tNode("presetVideoGen", "Video Generator"); },
+    get description() { return tNode("presetVideoGenDesc", "Simple Video Generation with Seedance Lite"); },
     icon: "video",
     image: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg",
     nodes: [
@@ -1004,18 +1018,18 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            name: "Input Text"
+            get name() { return tNode("inputText", "Input Text"); }
           },
           formValues: {
-            prompt: "Animate the scene with slow cinematic camera movement, subtle parallax, and smooth forward motion. Holographic elements gently pulse and shift, light rays move naturally through fog, floating structures subtly rotate, ultra-smooth transitions, realistic motion blur, film-grade animation, cinematic pacing, premium tech showcase style."
+            get prompt() { return presetCopy("presetVideoMotionPrompt"); }
           },
           outputs: [
             {
               type: "text",
-              value: "Animate the scene with slow cinematic camera movement, subtle parallax, and smooth forward motion. Holographic elements gently pulse and shift, light rays move naturally through fog, floating structures subtly rotate, ultra-smooth transitions, realistic motion blur, film-grade animation, cinematic pacing, premium tech showcase style."
+              get value() { return presetCopy("presetVideoMotionPrompt"); }
             }
           ],
-          resultUrl: "Animate the scene with slow cinematic camera movement, subtle parallax, and smooth forward motion. Holographic elements gently pulse and shift, light rays move naturally through fog, floating structures subtly rotate, ultra-smooth transitions, realistic motion blur, film-grade animation, cinematic pacing, premium tech showcase style."
+          get resultUrl() { return presetCopy("presetVideoMotionPrompt"); }
         },
         type: "textNode"
       },
@@ -1028,7 +1042,7 @@ export const presets = [
             name: "Seedream v4.5",
           },
           formValues: {
-            prompt: "Wide cinematic shot of a glowing futuristic city built from floating geometric shapes and holographic panels. Neon blue and purple lights, soft volumetric fog, reflective surfaces, dramatic sky, ultra-realistic lighting, depth of field, 8K detail, sci-fi cinematic style, symmetrical composition.",
+            get prompt() { return presetCopy("presetVideoImagePrompt"); },
             aspect_ratio: "1:1",
             quality: "high",
           },
@@ -1051,7 +1065,7 @@ export const presets = [
             name: "Seedance Lite I2V",
           },
           formValues: {
-            prompt: "Animate the scene with slow cinematic camera movement, subtle parallax, and smooth forward motion. Holographic elements gently pulse and shift, light rays move naturally through fog, floating structures subtly rotate, ultra-smooth transitions, realistic motion blur, film-grade animation, cinematic pacing, premium tech showcase style.",
+            get prompt() { return presetCopy("presetVideoMotionPrompt"); },
             image_url: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg",
             resolution: "720p",
             duration: 5,
@@ -1089,8 +1103,8 @@ export const presets = [
   },
   {
     id: "audio-generator",
-    title: "Audio Generator",
-    description: "Generate audio from text with Suno",
+    get title() { return tNode("presetAudioGen", "Audio Generator"); },
+    get description() { return tNode("presetAudioGenDesc", "Generate audio from text with Suno"); },
     icon: "audio",
     image: "https://images.unsplash.com/photo-1526512340740-9217d0159da9?q=80&w=500&auto=format&fit=crop",
     nodes: [
@@ -1100,18 +1114,18 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            name: "Input Text"
+            get name() { return tNode("inputText", "Input Text"); }
           },
           formValues: {
-            prompt: "Generate a cinematic ambient soundscape with deep atmospheric pads, soft evolving synth textures, subtle low-frequency pulses, and gentle high-end shimmer. The mood should feel futuristic, calm, and inspirational, suitable for a high-end AI product or cinematic workflow reveal. Clean mix, professional sound design, smooth transitions, no abrupt sounds."
+            get prompt() { return presetCopy("presetAudioPrompt"); }
           },
           outputs: [
             {
               type: "text",
-              value: "Generate a cinematic ambient soundscape with deep atmospheric pads, soft evolving synth textures, subtle low-frequency pulses, and gentle high-end shimmer. The mood should feel futuristic, calm, and inspirational, suitable for a high-end AI product or cinematic workflow reveal. Clean mix, professional sound design, smooth transitions, no abrupt sounds."
+              get value() { return presetCopy("presetAudioPrompt"); }
             }
           ],
-          resultUrl: "Generate a cinematic ambient soundscape with deep atmospheric pads, soft evolving synth textures, subtle low-frequency pulses, and gentle high-end shimmer. The mood should feel futuristic, calm, and inspirational, suitable for a high-end AI product or cinematic workflow reveal. Clean mix, professional sound design, smooth transitions, no abrupt sounds."
+          get resultUrl() { return presetCopy("presetAudioPrompt"); }
         },
         type: "textNode"
       },
@@ -1124,7 +1138,7 @@ export const presets = [
             name: "Suno Create Music"
           },
           formValues: {
-            prompt: "Generate a cinematic ambient soundscape with deep atmospheric pads, soft evolving synth textures, subtle low-frequency pulses, and gentle high-end shimmer. The mood should feel futuristic, calm, and inspirational, suitable for a high-end AI product or cinematic workflow reveal. Clean mix, professional sound design, smooth transitions, no abrupt sounds.",
+            get prompt() { return presetCopy("presetAudioPrompt"); },
             style: "Classical",
             style_weight: 0,
             vocal_gender: "male",
@@ -1158,8 +1172,8 @@ export const presets = [
   },
   {
     id: "captioning",
-    title: "LLM Image Captioning",
-    description: "Generate a prompt from an image with GPT-5",
+    get title() { return tNode("presetCaption", "LLM Image Captioning"); },
+    get description() { return tNode("presetCaptionDesc", "Generate a prompt from an image with GPT-5"); },
     icon: "text",
     image: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg",
     nodes: [
@@ -1169,7 +1183,7 @@ export const presets = [
         data: {
           selectedModel: {
             id: "image-passthrough",
-            name: "Input Image"
+            get name() { return tNode("inputImage", "Input Image"); }
           },
           formValues: {
             image_url: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg"
@@ -1193,16 +1207,16 @@ export const presets = [
             name: "GPT5 Nano"
           },
           formValues: {
-            prompt: "Provide a detailed prompt of this image, capturing as many elements as possible. Include specifics about the colors, textures, any people or objects present, and the setting. Describe the atmosphere, any notable features or interactions, and the overall mood of the scene.",
+            get prompt() { return presetCopy("presetCaptionPrompt"); },
             image_url: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg"
           },
           outputs: [
             {
               type: "text",
-              value: "A cinematic sci‑fi cityscape at golden hour. A lone explorer stands on the edge of a jagged cliff, gazing out over a vast megacity that rises above a sea of low-lying clouds. The foreground cliff is dark, rough rock with cracks and tufts of green grass and small wildflowers along the edge. The explorer wears a rugged, modern space/terrain suit with a backpack and gear; their silhouette is a quiet, contemplative figure framed against the glowing city. The city below and around is a dense forest of skyscrapers of varying shapes and heights, all made of glass and metal. Neon accents run along many surfaces: turquoise and teal vertical lines glow along several towers, red and magenta edge lights highlight upper contours, and cyan geometric strips trace architectural grooves. The central cluster features a pair of towering, illuminated monoliths with bright cyan highlights and antennae that reach into the sky. Other buildings have curved, multi-tiered silhouettes and reflective façades that catch the sunset and neon alike. A veil of mist and fog hangs around the lower levels, softening edges and lending a dreamlike scale to the city.\n\nIn the sky, several sleek flying vehicles streak by, leaving luminous trails—white and pale yellow from some, magenta and purple from others—adding dynamic motion and depth. The trails glow against a sky that shifts from warm sunset golds and oranges near the horizon to cool deep blues higher up, with scattered, sunlit clouds that glow with a honeyed, amber tint. The sun is low on the left, casting long, warm rays across the cliff and creating a gentle rim light on the explorer, while the city glows with cooler neon against the fading daylight. The overall atmosphere is awe-inspiring, adventurous, and slightly otherworldly—a moment of solitary exploration at the edge of a technologically advanced but fragile-looking metropolis. \n\nSuggested prompt (condensed for reuse):\nHyperreal cinematic sci‑fi city at golden hour. A lone explorer in a rugged space/terrain suit stands on the edge of a jagged cliff, overlooking a megacity rising from a sea of clouds. Tall glass towers with teal/cyan neon lines and red/magenta edge lights dominate the skyline; central twin towers glow with cyan accents. A warm sunset gradient—gold, orange, pink—meets cool neon reflections on glass. Flying vehicles streak across the sky, leaving white, yellow, and magenta light trails. Foreground cliff is rough rock with sparse grasses; mist swirls around the lower city, hiding the bases. The mood is awe-inspiring, adventurous, and otherworldly, with a sense of solitary discovery. Ultra-detailed, 8k, cinematic concept art, 16:9, high dynamic range, volumetric fog, soft lens flare from the sun."
+              get value() { return presetCopy("presetCaptionExampleOutput"); }
             }
           ],
-          resultUrl: "A cinematic sci‑fi cityscape at golden hour. A lone explorer stands on the edge of a jagged cliff, gazing out over a vast megacity that rises above a sea of low-lying clouds. The foreground cliff is dark, rough rock with cracks and tufts of green grass and small wildflowers along the edge. The explorer wears a rugged, modern space/terrain suit with a backpack and gear; their silhouette is a quiet, contemplative figure framed against the glowing city. The city below and around is a dense forest of skyscrapers of varying shapes and heights, all made of glass and metal. Neon accents run along many surfaces: turquoise and teal vertical lines glow along several towers, red and magenta edge lights highlight upper contours, and cyan geometric strips trace architectural grooves. The central cluster features a pair of towering, illuminated monoliths with bright cyan highlights and antennae that reach into the sky. Other buildings have curved, multi-tiered silhouettes and reflective façades that catch the sunset and neon alike. A veil of mist and fog hangs around the lower levels, softening edges and lending a dreamlike scale to the city.\n\nIn the sky, several sleek flying vehicles streak by, leaving luminous trails—white and pale yellow from some, magenta and purple from others—adding dynamic motion and depth. The trails glow against a sky that shifts from warm sunset golds and oranges near the horizon to cool deep blues higher up, with scattered, sunlit clouds that glow with a honeyed, amber tint. The sun is low on the left, casting long, warm rays across the cliff and creating a gentle rim light on the explorer, while the city glows with cooler neon against the fading daylight. The overall atmosphere is awe-inspiring, adventurous, and slightly otherworldly—a moment of solitary exploration at the edge of a technologically advanced but fragile-looking metropolis. \n\nSuggested prompt (condensed for reuse):\nHyperreal cinematic sci‑fi city at golden hour. A lone explorer in a rugged space/terrain suit stands on the edge of a jagged cliff, overlooking a megacity rising from a sea of clouds. Tall glass towers with teal/cyan neon lines and red/magenta edge lights dominate the skyline; central twin towers glow with cyan accents. A warm sunset gradient—gold, orange, pink—meets cool neon reflections on glass. Flying vehicles streak across the sky, leaving white, yellow, and magenta light trails. Foreground cliff is rough rock with sparse grasses; mist swirls around the lower city, hiding the bases. The mood is awe-inspiring, adventurous, and otherworldly, with a sense of solitary discovery. Ultra-detailed, 8k, cinematic concept art, 16:9, high dynamic range, volumetric fog, soft lens flare from the sun.",
+          get resultUrl() { return presetCopy("presetCaptionExampleOutput"); },
         },
         type: "textNode"
       },
@@ -1212,18 +1226,18 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            name: "Input Text"
+            get name() { return tNode("inputText", "Input Text"); }
           },
           formValues: {
-            prompt: "Provide a detailed prompt of this image, capturing as many elements as possible. Include specifics about the colors, textures, any people or objects present, and the setting. Describe the atmosphere, any notable features or interactions, and the overall mood of the scene."
+            get prompt() { return presetCopy("presetCaptionPrompt"); }
           },
           outputs: [
             {
               type: "text",
-              value: "Provide a detailed prompt of this image, capturing as many elements as possible. Include specifics about the colors, textures, any people or objects present, and the setting. Describe the atmosphere, any notable features or interactions, and the overall mood of the scene."
+              get value() { return presetCopy("presetCaptionPrompt"); }
             }
           ],
-          resultUrl: "Provide a detailed prompt of this image, capturing as many elements as possible. Include specifics about the colors, textures, any people or objects present, and the setting. Describe the atmosphere, any notable features or interactions, and the overall mood of the scene.",
+          get resultUrl() { return presetCopy("presetCaptionPrompt"); },
         },
         type: "textNode"
       }

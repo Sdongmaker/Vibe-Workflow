@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoPlay, IoPause, IoVolumeHigh, IoVolumeMute, IoExpand, IoContract } from "react-icons/io5";
 import { toast } from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 const VideoPlayer = ({ 
   src, 
@@ -11,6 +12,7 @@ const VideoPlayer = ({
   className = "w-full h-full object-contain",
   accentColor = "#f97316"
 }) => {
+  const { t } = useTranslation("nodes");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -42,7 +44,7 @@ const VideoPlayer = ({
     
     if (!document.fullscreenElement) {
       containerRef.current.requestFullscreen().catch((err) => {
-        toast.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        toast.error(t("fullscreenFailed", { message: err.message }));
       });
     } else {
       document.exitFullscreen();

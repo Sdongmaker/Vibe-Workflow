@@ -11,22 +11,36 @@ const resources = {
   zh: { nodes: zh, chat: zhChat },
 };
 
-const savedLang = (typeof window !== 'undefined' && localStorage.getItem('i18n_lang')) || 'en';
+const savedLang = (typeof window !== 'undefined' && localStorage.getItem('i18n_lang')) || 'zh';
 
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: savedLang,
-    fallbackLng: 'en',
-    defaultNS: 'nodes',
-    interpolation: { escapeValue: false },
+if (!i18n.isInitialized) {
+  i18n
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: savedLang,
+      fallbackLng: 'zh',
+      defaultNS: 'nodes',
+      interpolation: { escapeValue: false },
+    });
+} else if (i18n.language !== savedLang) {
+  i18n.changeLanguage(savedLang);
+}
+
+if (i18n.isInitialized && typeof i18n.getResourceBundle === 'function' && typeof i18n.addResourceBundle === 'function') {
+  Object.entries(resources).forEach(([lng, namespaces]) => {
+    Object.entries(namespaces).forEach(([ns, resource]) => {
+      if (!i18n.getResourceBundle(lng, ns)) {
+        i18n.addResourceBundle(lng, ns, resource, true, true);
+      }
+    });
   });
+}
 
 // Sync language from localStorage changes (triggered by client's LanguageSwitcher)
 if (typeof window !== 'undefined') {
   window.addEventListener('languageChanged', () => {
-    const lang = localStorage.getItem('i18n_lang') || 'en';
+    const lang = localStorage.getItem('i18n_lang') || 'zh';
     if (i18n.language !== lang) {
       i18n.changeLanguage(lang);
     }

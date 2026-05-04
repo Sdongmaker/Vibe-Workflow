@@ -119,7 +119,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
     })
     .catch((error) => {
       console.error("Upload failed", error);
-      toast.error(error?.response?.data || t("toastUploadFailed"));
+      toast.error(error?.response?.data?.detail || t("toastUploadFailed"));
       setUploading(false);
       setUploadProgress(0);
     })

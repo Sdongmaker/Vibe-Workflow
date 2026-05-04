@@ -12,6 +12,7 @@ import NodeSendButton from "./NodeSendButton";
 import NodeOptionsMenu from "./NodeOptionsMenu";
 import { useGenerationCost } from "./useGenerationCost";
 import { useTranslation } from "react-i18next";
+import { displayModelName } from "./modelDisplayName";
 import "../i18n";
 
 const inputHandles = [
@@ -463,7 +464,7 @@ const TextGeneration = ({ id, data, selected }) => {
               <TfiText size={14} />
             </div>
             <h3 className="text-xs font-bold text-zinc-100">
-              {selectedModel.name}
+              {displayModelName(selectedModel, t)}
             </h3>
           </div>
           {outputHistory.length > 0 && (

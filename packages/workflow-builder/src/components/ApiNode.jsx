@@ -12,6 +12,7 @@ import { RiInputMethodLine } from "react-icons/ri";
 import NodeSendButton from "./NodeSendButton";
 import NodeOptionsMenu from "./NodeOptionsMenu";
 import { useTranslation } from "react-i18next";
+import { displayModelName } from "./modelDisplayName";
 import "../i18n";
 
 const outputHandles = [
@@ -385,7 +386,7 @@ const ApiNode = ({ id, data, selected }) => {
         console.log(error);
         clearInterval(interval);
         data.onDataChange(id, { isLoading: false });
-        toast.error(t("toastFailedStatusNode", { node: `Api ${id.replace(/^\D+/g, "")}` }));
+        toast.error(t("toastFailedStatusNode", { node: `${t("apiNode")} ${id.replace(/^\D+/g, "")}` }));
       });
     }, 3000);
   };
@@ -587,7 +588,7 @@ const ApiNode = ({ id, data, selected }) => {
     >
       <div className="flex items-center gap-2 absolute -top-5 left-0">
         <h3 className="text-zinc-400 text-[10px] font-medium tracking-wider uppercase">
-          Api {id.replace(/^\D+/g, "")}
+          {t("apiNode")} {id.replace(/^\D+/g, "")}
         </h3>
         <span className="text-xs text-blue-500 -mt-0.5 font-medium flex items-center gap-1 opacity-80">
           $0.025
@@ -600,7 +601,7 @@ const ApiNode = ({ id, data, selected }) => {
               <RiInputMethodLine size={14} />
             </div>
             <h3 className="text-xs font-bold text-zinc-100">
-              {selectedModel.name}
+              {displayModelName(selectedModel, t)}
             </h3>
           </div>
           {outputHistory.length > 0 && (
@@ -682,7 +683,7 @@ const ApiNode = ({ id, data, selected }) => {
               ) : (currentOutputList[currentOutputIndex]?.type === 'image_url' || currentOutputList[currentOutputIndex]?.type === 'image') ? (
                 <img
                   src={currentOutput}
-                  alt="Generated"
+                  alt={t("preview")}
                   className="w-full h-full rounded-md object-contain"
                 />
               ) : currentOutputList[currentOutputIndex]?.type === 'audio_url' ? (

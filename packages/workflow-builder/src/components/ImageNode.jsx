@@ -14,6 +14,7 @@ import NodeSendButton from "./NodeSendButton";
 import NodeOptionsMenu from "./NodeOptionsMenu";
 import { useGenerationCost } from "./useGenerationCost";
 import { useTranslation } from "react-i18next";
+import { displayModelName } from "./modelDisplayName";
 import "../i18n";
 
 const inputHandles = [
@@ -501,7 +502,7 @@ const ImageGeneration = ({ id, data, selected }) => {
               <IoImageOutline size={14} />
             </div>
             <h3 className="text-xs font-bold text-zinc-100">
-              {selectedModel.name}
+              {displayModelName(selectedModel, t)}
             </h3>
           </div>
           {outputHistory.length > 0 && (
@@ -609,7 +610,7 @@ const ImageGeneration = ({ id, data, selected }) => {
               <img
                 key={currentOutput}
                 src={currentOutput}
-                alt="Generated"
+                alt={t("preview")}
                 className="w-full h-full object-contain rounded-b-xl animate-in fade-in duration-500"
               />
               <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 pointer-events-none rounded-b-xl flex flex-col justify-end">

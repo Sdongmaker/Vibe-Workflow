@@ -31,6 +31,8 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
     "image-passthrough": t("inputImage"),
     "video-passthrough": t("inputVideo"),
     "audio-passthrough": t("inputAudio"),
+    "prompt-concatenator": t("promptConcatenator"),
+    "video-combiner": t("videoCombiner"),
   };
 
   const getNodeTypeFromSubmenuId = (id) => {
@@ -80,7 +82,10 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
     // Add local models if they are not in the backend response
     [...concatModels, ...videoCombinerModels].forEach(m => {
       if (!utilityModels.find(um => um.id === m.id)) {
-        utilityModels.push(m);
+        utilityModels.push({
+          ...m,
+          name: SPECIAL_MODEL_NAMES[m.id] || m.name,
+        });
       }
     });
 
@@ -143,8 +148,6 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       items: [
         { label: t("generateImage"), icon: <IoImageOutline />, hasSubmenu: true, id: "generate-image" },
         { label: t("editImage"), icon: <RiImageAiLine />, hasSubmenu: true, id: "edit-image" },
-        // { label: "Upscale Image", icon: <MdOutlineImage />, hasSubmenu: true, id: "upscale-image" },
-        // { label: "Image Utilities", icon: <MdCrop />, hasSubmenu: true, id: "image-utils" },
       ]
     },
     {
@@ -412,32 +415,32 @@ const Submenu = ({ activeSubMenu, menuStructure, getSubmenuItems, handleAddNode,
     return "right-full mr-2";
   };
 
-  const getLabelIcon = (label) => {
-    switch (label) {
-      case "Input Models":
+  const getLabelIcon = (id) => {
+    switch (id) {
+      case "inputs":
         return <LuUpload />;
-      case "Text (LLMs)":
+      case "text-llms":
         return <TfiText />;
-      case "Text Utilities":
-      case "Utilities":
+      case "text-utils":
+      case "utilities":
         return <TbArrowMerge className="rotate-90" />;
-      case "Generate Image":
+      case "generate-image":
         return <IoImageOutline />;
-      case "Edit Image":
+      case "edit-image":
         return <RiImageAiLine />;
-      case "Upscale Image":
+      case "upscale-image":
         return <MdCrop />;
-      case "Image Utilities":
+      case "image-utils":
         return <MdAutoFixHigh />;
-      case "Generate Video":
+      case "generate-video":
         return <IoVideocamOutline />;
-      case "Edit Video":
+      case "edit-video":
         return <RiVideoOnAiLine />;
-      case "Upscale Video":
+      case "upscale-video":
         return <MdCrop />;
-      case "Generate Audio":
+      case "generate-audio":
         return <AiOutlineAudio />;
-      case "Api Node":
+      case "api-models":
         return <RiInputMethodLine />;
       default:
         return null;
@@ -468,7 +471,7 @@ const Submenu = ({ activeSubMenu, menuStructure, getSubmenuItems, handleAddNode,
               onClick={() => handleAddNode(item.type, item.model)}
             >
               <span className="text-gray-400 group-hover:text-white text-sm">
-                {getLabelIcon(menuStructure.flatMap(s => s.items).find(i => i.id === activeSubMenu)?.label)}
+                {getLabelIcon(activeSubMenu)}
               </span>
               <span className="truncate">{item.label}</span>
             </button>

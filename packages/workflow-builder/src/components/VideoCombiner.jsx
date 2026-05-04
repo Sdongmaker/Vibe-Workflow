@@ -12,6 +12,7 @@ import { TbArrowMerge } from "react-icons/tb";
 import { useGenerationCost } from "./useGenerationCost";
 import VideoPlayer from "./VideoPlayer";
 import { useTranslation } from "react-i18next";
+import { displayModelName } from "./modelDisplayName";
 import "../i18n";
 
 const inputHandles = [
@@ -433,7 +434,7 @@ const VideoCombiner = ({ id, data, selected }) => {
               <TbArrowMerge size={14} className="rotate-90" />
             </div>
             <h3 className="text-xs font-bold text-zinc-100">
-              {selectedModel.name}
+              {displayModelName(selectedModel, t)}
             </h3>
           </div>
           {outputHistory.length > 0 && (

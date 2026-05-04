@@ -82,7 +82,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
     })
     .catch((error) => {
       console.error("Upload failed", error);
-      toast.error(t("toastDownloadFailed"));
+      toast.error(t("toastUploadFailed"));
       setUploading(false);
       setUploadProgress(0);
     })  
@@ -234,7 +234,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
                   <div className="relative w-full h-full group/image">
                     <img
                       src={formValues?.image_url}
-                      alt="Uploaded"
+                      alt={t("preview")}
                       className="w-full h-full object-contain"
                     />
                     <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 pointer-events-none flex flex-col justify-end">
@@ -277,7 +277,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
                 style={{ minHeight: 200 }} 
                 className="cursor-pointer flex flex-col items-center justify-center gap-2 text-gray-400 border border-dashed border-gray-600 rounded-lg p-4 w-full flex-1 hover:bg-gray-700/50 h-full"
               >                <FiUpload size={20} />
-                <span className="text-xs capitalize">{t("uploadBtn", { type: acceptType })}</span>
+                <span className="text-xs capitalize">{t("uploadBtn", { type: t(acceptType) })}</span>
                 <span className="text-xs text-gray-500">{t("dragDropHint")}</span>
                 <input
                   type="file"

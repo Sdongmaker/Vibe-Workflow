@@ -101,7 +101,7 @@ const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleCh
     })
     .catch((error) => {
       console.error("Upload failed", error);
-      toast.error(t("toastDownloadFailed"));
+      toast.error(t("toastUploadFailed"));
       setUploading(false);
       setUploadProgress(0);
     })
@@ -226,7 +226,7 @@ const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleCh
         {formValues[fieldName] && (
           <div className="flex items-center gap-2 relative group overflow-hidden self-start w-full">
             {meta.field === 'image' ? (
-              <img src={formValues[fieldName]} alt="Preview" className="w-24 h-24 object-cover border border-white/10 rounded-xl shadow-lg" width={0} height={0} />
+              <img src={formValues[fieldName]} alt={t("preview")} className="w-24 h-24 object-cover border border-white/10 rounded-xl shadow-lg" width={0} height={0} />
             ) : meta.field === 'video' ? (
               <video src={formValues[fieldName]} className="w-24 h-24 object-cover border border-white/10 rounded-xl shadow-lg" />
             ) : meta.field === 'audio' && (
@@ -262,7 +262,7 @@ const RenderField = ({ fieldName, meta, idx, formValues, setFormValues, handleCh
               {meta.field === 'images_list' ? (
                 <img 
                   src={url} 
-                  alt="Preview" 
+                  alt={t("preview")} 
                   className="w-full h-full aspect-[1/1] object-cover border border-gray-500 rounded" 
                 />
               ) : ['videos_list', 'video_files'].includes(meta.field) ? (

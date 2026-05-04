@@ -140,6 +140,23 @@ const SPECIAL_MODEL_NAMES = {
   "audio-passthrough": "inputAudio",
 };
 
+const SPECIAL_MODEL_DISPLAY_NAMES = {
+  "inputText": "输入文本",
+  "inputImage": "输入图片",
+  "inputVideo": "输入视频",
+  "inputAudio": "输入音频",
+  "promptConcatenator": "提示拼接器",
+  "videoCombiner": "视频合并器",
+};
+
+const PRESET_LOCALE_KEYS = {
+  "empty-workflow": { title: "presetEmpty", description: "presetEmptyDesc" },
+  "image-generator": { title: "presetImageGen", description: "presetImageGenDesc" },
+  "video-generator": { title: "presetVideoGen", description: "presetVideoGenDesc" },
+  "audio-generator": { title: "presetAudioGen", description: "presetAudioGenDesc" },
+  captioning: { title: "presetCaption", description: "presetCaptionDesc" },
+};
+
 const formatName = (id) => id.replace(/-/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
 const getModelObjStatic = (category, modelId, nodeSchemas) => {
@@ -2450,7 +2467,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                     onClick={() => setDropDown(prev => prev === 3 ? 0 : 3)}
                     className="flex items-center justify-between gap-1 text-sm text-center text-white w-full h-full cursor-pointer whitespace-nowrap px-3 py-2 bg-zinc-900/50 border border-white/10 hover:border-white/20 focus:outline-none rounded-lg transition-all"
                   >
-                    {selectedNode?.data?.selectedModel?.name || ""}
+                    {SPECIAL_MODEL_NAMES[selectedNode?.data?.selectedModel?.id] ? t(SPECIAL_MODEL_NAMES[selectedNode.data.selectedModel.id]) : selectedNode?.data?.selectedModel?.name || ""}
                     <FaAngleDown size={14} className={`transition-all duration-300 ${dropDown === 3 && "rotate-180"}`} />
                   </button>
                   {dropDown === 3 && (
@@ -2477,7 +2494,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                                 setModelSearch("");
                               }}
                             >
-                              <h2 className="text-sm whitespace-nowrap">{SPECIAL_MODEL_NAMES[model.id] ? t(SPECIAL_MODEL_NAMES[model.id]) : model.name}</h2>
+                              <h2 className="text-sm whitespace-nowrap">{SPECIAL_MODEL_DISPLAY_NAMES[SPECIAL_MODEL_NAMES[model.id]] || model.name}</h2>
                               {selectedNode?.data?.selectedModel?.id === model.id && (
                                 <FaCheck size={12} className="ml-auto" />
                               )}
@@ -2770,47 +2787,53 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
               <p className="text-xs text-gray-400 font-medium uppercase tracking-widest">{t("orStartFromScratch")}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {presets.map((preset) => (
-                <button
-                  type="button"
-                  suppressHydrationWarning={true}
-                  key={preset.id}
-                  onClick={() => loadPreset(preset)}
-                  className="group relative flex flex-col bg-[#151618] aspect-[4/3] border border-gray-700 hover:border-gray-500 rounded-lg shadow-xl hover:shadow-2xl hover:scale-105 cursor-pointer transition-all duration-200 overflow-hidden text-left"
-                >
-                  <div className="z-10 p-2 bg-[#242629] border-b border-gray-700 flex items-center px-3 justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${preset.id === "empty-workflow" ? "bg-gray-400" : "bg-blue-500"}`}></div>
-                      <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">{preset.id === "empty-workflow" ? t("new") : t("preset")}</span>
-                    </div>
-                    <div className="flex gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
-                    </div>
-                  </div>
-                  <div className="z-0 p-4 flex flex-col gap-3 h-full">
-                    <div className="flex items-center justify-center gap-2 z-10 w-full h-full">
-                      <div className="text-white group-hover:text-blue-400 transition-colors">
-                        {iconMap[preset.icon] || <RiInputMethodLine size={16} />}
+              {presets.map((preset) => {
+                const presetLocale = PRESET_LOCALE_KEYS[preset.id] || {};
+                const presetTitle = presetLocale.title ? t(presetLocale.title) : preset.title;
+                const presetDescription = presetLocale.description ? t(presetLocale.description) : preset.description;
+
+                return (
+                  <button
+                    type="button"
+                    suppressHydrationWarning={true}
+                    key={preset.id}
+                    onClick={() => loadPreset(preset)}
+                    className="group relative flex flex-col bg-[#151618] aspect-[4/3] border border-gray-700 hover:border-gray-500 rounded-lg shadow-xl hover:shadow-2xl hover:scale-105 cursor-pointer transition-all duration-200 overflow-hidden text-left"
+                  >
+                    <div className="z-10 p-2 bg-[#242629] border-b border-gray-700 flex items-center px-3 justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${preset.id === "empty-workflow" ? "bg-gray-400" : "bg-blue-500"}`}></div>
+                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">{preset.id === "empty-workflow" ? t("new") : t("preset")}</span>
                       </div>
-                      <h3 className="text-sm font-medium text-white leading-tight group-hover:text-blue-400 transition-colors">
-                        {preset.title}
-                      </h3>
-                    </div>
-                    {preset.image && (
-                      <div className="absolute inset-0 z-0 w-full h-full rounded overflow-hidden border border-gray-800">
-                        <img src={preset.image} alt="" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
-                        <div className="absolute inset-0 z-10 w-full h-full bg-black/60"></div>
+                      <div className="flex gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
                       </div>
-                    )}
-                    {preset.description && (
-                      <p className="z-10 text-[11px] text-gray-300 leading-relaxed border-t border-gray-500 pt-2 mt-auto">
-                        {preset.description}
-                      </p>
-                    )}
-                  </div>
-                </button>
-              ))}
+                    </div>
+                    <div className="z-0 p-4 flex flex-col gap-3 h-full">
+                      <div className="flex items-center justify-center gap-2 z-10 w-full h-full">
+                        <div className="text-white group-hover:text-blue-400 transition-colors">
+                          {iconMap[preset.icon] || <RiInputMethodLine size={16} />}
+                        </div>
+                        <h3 className="text-sm font-medium text-white leading-tight group-hover:text-blue-400 transition-colors">
+                          {presetTitle}
+                        </h3>
+                      </div>
+                      {preset.image && (
+                        <div className="absolute inset-0 z-0 w-full h-full rounded overflow-hidden border border-gray-800">
+                          <img src={preset.image} alt="" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                          <div className="absolute inset-0 z-10 w-full h-full bg-black/60"></div>
+                        </div>
+                      )}
+                      {presetDescription && (
+                        <p className="z-10 text-[11px] text-gray-300 leading-relaxed border-t border-gray-500 pt-2 mt-auto">
+                          {presetDescription}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
             <button
               type="button"

@@ -15,6 +15,7 @@ import NodeOptionsMenu from "./NodeOptionsMenu";
 import { useGenerationCost } from "./useGenerationCost";
 import VideoPlayer from "./VideoPlayer";
 import { useTranslation } from "react-i18next";
+import { displayModelName } from "./modelDisplayName";
 import "../i18n";
 
 const inputHandles = [
@@ -475,7 +476,7 @@ const VideoGeneration = ({ id, data, selected }) => {
               <IoVideocamOutline size={14} />
             </div>
             <h3 className="text-xs font-bold text-zinc-100">
-              {selectedModel.name}
+              {displayModelName(selectedModel, t)}
             </h3>
           </div>
           {outputHistory.length > 0 && (
