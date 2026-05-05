@@ -28,7 +28,7 @@ import TextGeneration from "./TextNode";
 import ImageGeneration from "./ImageNode";
 import VideoGeneration from "./VideoNode";
 import { setWorkflowIds } from "./WorkflowStore";
-import { apiNodeModels, audioModels, concatModels, imageModels, textModels, videoModels, videoCombinerModels, presets } from "./utility";
+import { apiNodeModels, concatModels, presets, videoCombinerModels } from "./utility";
 import Link from "next/link";
 import RenderField from "./RenderField";
 import PromptConcate from "./PromptConcate";
@@ -358,6 +358,30 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
   const filteredApiNodeModels = apiNodeModels.filter(model =>
     apiModelsFromBackend.includes(model.id)
   );
+  const utilityModels = useMemo(() => {
+    const modelsMap = nodeSchemas?.categories?.utility?.models;
+    const backendModels = modelsMap
+      ? Object.entries(modelsMap).map(([modelId, model]) => ({
+          ...model,
+          id: modelId,
+          displayNameKey: model.displayNameKey || MODEL_DISPLAY_NAME_KEYS[modelId],
+          name: model.name || formatName(modelId),
+          type: modelId === "video-combiner" ? "vidConcatNode" : "concatNode",
+        }))
+      : [];
+
+    [...concatModels, ...videoCombinerModels].forEach((model) => {
+      if (!backendModels.some((item) => item.id === model.id)) {
+        backendModels.push({
+          ...model,
+          displayNameKey: model.displayNameKey || MODEL_DISPLAY_NAME_KEYS[model.id],
+          type: model.id === "video-combiner" ? "vidConcatNode" : "concatNode",
+        });
+      }
+    });
+
+    return backendModels;
+  }, [nodeSchemas]);
 
   const loadPreset = (preset) => {
     setIsPresetsDismissed(true);
@@ -2359,26 +2383,21 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
             <div className="absolute left-14 top-0 bg-[#1b1e23] border border-gray-700 p-3 rounded-lg flex flex-col gap-2 w-52">
               <h3 className="w-full text-center text-sm text-gray-300">{t("utilityNode")}</h3>
               <div className="flex flex-col gap-2 w-full">
-                <button
-                  type="button"
-                  suppressHydrationWarning={true}
-                  onClick={() => addNode("concatNode", null, { selectedModel: concatModels[0] })}
-                  title={t("promptConcatenator")}
-                  aria-label={t("promptConcatenator")}
-                  className="flex gap-2 justify-center items-center py-3 px-4 text-white cursor-pointer bg-[#2c3037] rounded hover:bg-[#212326]"
-                >
-                  <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">{t("promptConcatenator")}</span>
-                </button>
-                <button
-                  type="button"
-                  suppressHydrationWarning={true}
-                  onClick={() => addNode("vidConcatNode", null, { selectedModel: videoCombinerModels[0] })}
-                  title={t("videoCombiner")}
-                  aria-label={t("videoCombiner")}
-                  className="flex gap-2 justify-center items-center py-3 px-4 text-white cursor-pointer bg-[#2c3037] rounded hover:bg-[#212326]"
-                >
-                  <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">{t("videoCombiner")}</span>
-                </button>
+                {utilityModels.length > 0 ? utilityModels.map((model) => (
+                  <button
+                    type="button"
+                    suppressHydrationWarning={true}
+                    key={model.id}
+                    onClick={() => addNode(model.type, null, { selectedModel: model })}
+                    title={getLocalizedModelName(t, model)}
+                    aria-label={getLocalizedModelName(t, model)}
+                    className="flex gap-2 justify-center items-center py-3 px-4 text-white cursor-pointer bg-[#2c3037] rounded hover:bg-[#212326]"
+                  >
+                    <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">{getLocalizedModelName(t, model)}</span>
+                  </button>
+                )) : (
+                  <p className="text-center text-xs text-gray-500 py-3">{t("noItems")}</p>
+                )}
               </div>
             </div>
           )}

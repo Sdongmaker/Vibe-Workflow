@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import WorkflowListingClient from "./WorkflowListingClient";
 import enWorkflow from "../../i18n/locales/en/workflow.json";
 import zhWorkflow from "../../i18n/locales/zh/workflow.json";
+import { getServerApiBaseUrl } from "../lib/serverApi";
 
 const workflowMetadataByLang = {
   en: enWorkflow,
@@ -16,9 +17,8 @@ const getLocaleResources = (lang) => {
     resources: workflowMetadataByLang[normalizedLang],
   };
 };
-
 async function getWorkflowDefs(cookieHeader) {
-  const endpoint = `http://127.0.0.1:8000/api/workflow/get-workflow-defs`;
+  const endpoint = `${getServerApiBaseUrl()}/api/workflow/get-workflow-defs`;
   try {
     const res = await fetch(endpoint, {
       cache: 'no-store',

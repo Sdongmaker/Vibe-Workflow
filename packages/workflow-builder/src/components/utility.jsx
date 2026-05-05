@@ -3,6 +3,10 @@ import { toast } from "react-hot-toast";
 import i18n from "../i18n";
 
 const tNode = (key, defaultValue) => i18n.t(key, { ns: "nodes", defaultValue });
+const SAMPLE_IMAGE_URL = "https://images.unsplash.com/photo-1633419461186-7d40a38105ec?q=80&w=1200&auto=format&fit=crop";
+const SAMPLE_VIDEO_URL = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+const SAMPLE_AUDIO_URL = "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3";
+
 const presetCopyDefaults = {
   presetImageInitialPrompt: "一位未来 AI 工程师置身全息指挥中心的超精细电影感肖像。漂浮的透明 UI 面板、发光的蓝紫色数据流、反光表面、柔和轮廓光、浅景深、真实肤质、高级科幻电影质感、8K 分辨率、照片级真实感、强烈戏剧对比、干净的未来主义设计。",
   presetImageEditPrompt: "增强光照，让画面更具电影感，加入更强的轮廓光和细腻的体积雾。提升对比度和空间层次，在主体周围添加发光全息元素，略微压暗背景以突出焦点，强化面部真实感和清晰度，并保持照片级真实的高级科幻氛围。",
@@ -897,7 +901,7 @@ export const presets = [
     get title() { return tNode("presetImageGen", "图片生成与编辑"); },
     get description() { return tNode("presetImageGenDesc", "使用 Wan 2.5 生成和编辑图片"); },
     icon: "image",
-    image: "https://cdn.muapi.ai/outputs/e53f9cb2caf947f790154dada58a426c.jpg",
+    image: SAMPLE_IMAGE_URL,
     nodes: [
       {
         id: "text1",
@@ -936,10 +940,10 @@ export const presets = [
           outputs: [
             {
               type: "image_url",
-              value: "https://cdn.muapi.ai/outputs/8c6c1863ae594cb99e82884f5d3de058.jpg"
+              value: SAMPLE_IMAGE_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/8c6c1863ae594cb99e82884f5d3de058.jpg"
+          resultUrl: SAMPLE_IMAGE_URL
         },
         type: "imageNode"
       },
@@ -975,7 +979,7 @@ export const presets = [
           formValues: {
             get prompt() { return presetCopy("presetImageEditPrompt"); },
             images_list: [
-              "https://cdn.muapi.ai/outputs/8c6c1863ae594cb99e82884f5d3de058.jpg"
+              SAMPLE_IMAGE_URL
             ],
             width: 2048,
             height: 2048,
@@ -983,10 +987,10 @@ export const presets = [
           outputs: [
             {
               type: "image_url",
-              value: "https://cdn.muapi.ai/outputs/e53f9cb2caf947f790154dada58a426c.jpg"
+              value: SAMPLE_IMAGE_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/e53f9cb2caf947f790154dada58a426c.jpg"
+          resultUrl: SAMPLE_IMAGE_URL
         },
         type: "imageNode"
       }
@@ -1023,7 +1027,7 @@ export const presets = [
     get title() { return tNode("presetVideoGen", "视频生成器"); },
     get description() { return tNode("presetVideoGenDesc", "使用 Seedance Lite 进行简单的视频生成"); },
     icon: "video",
-    image: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg",
+    image: SAMPLE_IMAGE_URL,
     nodes: [
       {
         id: "text1",
@@ -1062,10 +1066,10 @@ export const presets = [
           outputs: [
             {
               type: "image_url",
-              value: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg"
+              value: SAMPLE_IMAGE_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg"
+          resultUrl: SAMPLE_IMAGE_URL
         },
         type: "imageNode"
       },
@@ -1079,7 +1083,7 @@ export const presets = [
           },
           formValues: {
             get prompt() { return presetCopy("presetVideoMotionPrompt"); },
-            image_url: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg",
+            image_url: SAMPLE_IMAGE_URL,
             resolution: "720p",
             duration: 5,
             camera_fixed: false,
@@ -1087,10 +1091,10 @@ export const presets = [
           outputs: [
             {
               type: "video_url",
-              value: "https://cdn.muapi.ai/outputs/6e1f813951b24868ad117ddca0aaa8ea.mp4"
+              value: SAMPLE_VIDEO_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/6e1f813951b24868ad117ddca0aaa8ea.mp4"
+          resultUrl: SAMPLE_VIDEO_URL
         },
         type: "videoNode"
       }
@@ -1164,10 +1168,10 @@ export const presets = [
           outputs: [
             {
               type: "audio_url",
-              value: "https://cdn.muapi.ai/outputs/6a42f05895284e8687420843c749e11c.mp3"
+              value: SAMPLE_AUDIO_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/6a42f05895284e8687420843c749e11c.mp3"
+          resultUrl: SAMPLE_AUDIO_URL
         },
         type: "audioNode"
       }
@@ -1188,7 +1192,7 @@ export const presets = [
     get title() { return tNode("presetCaption", "LLM 图片描述"); },
     get description() { return tNode("presetCaptionDesc", "使用 GPT-5 从图片生成提示词"); },
     icon: "text",
-    image: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg",
+    image: SAMPLE_IMAGE_URL,
     nodes: [
       {
         id: "image1",
@@ -1199,15 +1203,15 @@ export const presets = [
             get name() { return tNode("inputImage", "输入图片"); }
           },
           formValues: {
-            image_url: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg"
+            image_url: SAMPLE_IMAGE_URL
           },
           outputs: [
             {
               type: "image_url",
-              value: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg"
+              value: SAMPLE_IMAGE_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg",
+          resultUrl: SAMPLE_IMAGE_URL,
         },
         type: "imageNode"
       },
@@ -1221,7 +1225,7 @@ export const presets = [
           },
           formValues: {
             get prompt() { return presetCopy("presetCaptionPrompt"); },
-            image_url: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg"
+            image_url: SAMPLE_IMAGE_URL
           },
           outputs: [
             {

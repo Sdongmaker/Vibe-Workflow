@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import WorkflowBuilderClient from "./WorkflowBuilderClient";
 import enWorkflow from "../../../i18n/locales/en/workflow.json";
 import zhWorkflow from "../../../i18n/locales/zh/workflow.json";
+import { getServerApiBaseUrl } from "../../lib/serverApi";
 
 const workflowResourcesByLang = {
   en: enWorkflow,
@@ -14,9 +15,8 @@ const getLocaleResources = (lang) => {
   const normalizedLang = lang?.toLowerCase().startsWith("en") ? "en" : "zh";
   return workflowResourcesByLang[normalizedLang];
 };
-
 async function fetchWorkflowData(id, cookieHeader) {
-  const baseUrl = "http://127.0.0.1:8000/api/workflow";
+  const baseUrl = `${getServerApiBaseUrl()}/api/workflow`;
   try {
     const [workflowRes, schemasRes] = await Promise.all([
       fetch(`${baseUrl}/get-workflow-def/${id}`, {

@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 import { IoClose, IoTrashOutline } from "react-icons/io5";
 import { AiOutlineAudio } from "react-icons/ai";
 import UploadNode from "./UploadNode";
-import { audioModels, downloadFile } from "./utility";
+import { downloadFile } from "./utility";
 import AudioPlayer from "./AudioPlayer";
 import axios from "axios";
 import { SlOptions } from "react-icons/sl";

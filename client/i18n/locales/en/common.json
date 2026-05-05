@@ -2,6 +2,7 @@
   "workflowPro": "WorkflowPro",
   "getApiKey": "Get API Key",
   "getApiKeyAria": "Open API key page",
+  "openBuilder": "Open Builder",
   "switchLang": "中",
   "switchLangAria": "Switch language to Chinese",
   "siteTitle": "Vibe Workflow - Open-source AI workflow orchestration platform",
