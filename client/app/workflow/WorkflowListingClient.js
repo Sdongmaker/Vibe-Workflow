@@ -149,6 +149,8 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
           <div className="flex items-center gap-1 border-b border-white/10 w-full overflow-x-auto no-scrollbar">
             <button
               type="button"
+              aria-current="page"
+              aria-label={t("myWorkflowsTabAria")}
               className="px-6 py-4 text-sm font-black transition-all whitespace-nowrap border-b-2 uppercase tracking-widest text-blue-500 border-blue-500"
             >
               {t("myWorkflows")}
@@ -157,7 +159,12 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
         </header>
 
         {loading && workflowList.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[400px]">
+          <div
+            role="status"
+            aria-live="polite"
+            aria-label={t("loadingStatusAria")}
+            className="flex flex-col items-center justify-center min-h-[400px]"
+          >
             <div className="w-10 h-10 border-4 border-white/10 border-t-blue-500 rounded-full animate-spin" />
             <span className="mt-4 text-zinc-500 font-bold uppercase tracking-widest animate-pulse">{t("loading")}</span>
           </div>

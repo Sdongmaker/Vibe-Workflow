@@ -35,11 +35,47 @@ REMOTE_DETAIL_TRANSLATIONS = {
     "forbidden": "无权访问该资源",
     "invalid api key": "API Key 无效，请检查配置",
     "missing api key": MU_API_KEY_REQUIRED_DETAIL,
+    "api key missing": MU_API_KEY_REQUIRED_DETAIL,
+    "rate limit": "请求过于频繁，请稍后重试",
     "rate limit exceeded": "请求过于频繁，请稍后重试",
     "too many requests": "请求过于频繁，请稍后重试",
+    "quota exceeded": "服务额度已用尽，请检查配额或稍后重试",
+    "insufficient quota": "服务额度不足，请检查配额或稍后重试",
+    "timeout": "远程服务响应超时，请稍后重试",
+    "timed out": "远程服务响应超时，请稍后重试",
+    "connection": "连接远程服务失败，请稍后重试",
+    "bad request": "请求参数不正确，请检查后重试",
+    "validation": "请求参数校验失败，请检查后重试",
+    "permission": "没有权限执行该操作",
+    "not editable": "当前工作流不可编辑",
+    "workflow failed": "工作流执行失败，请稍后重试",
     "internal server error": INTERNAL_SERVER_ERROR_DETAIL,
     "something went wrong": REMOTE_REQUEST_FAILED_DETAIL,
 }
+REMOTE_DETAIL_TRANSLATION_ORDER = [
+    "invalid api key",
+    "missing api key",
+    "api key missing",
+    "unauthorized",
+    "forbidden",
+    "quota exceeded",
+    "insufficient quota",
+    "rate limit exceeded",
+    "too many requests",
+    "rate limit",
+    "workflow not found",
+    "not editable",
+    "not found",
+    "workflow failed",
+    "timeout",
+    "timed out",
+    "connection",
+    "bad request",
+    "validation",
+    "permission",
+    "internal server error",
+    "something went wrong",
+]
 
 
 def use_local_workflow_store() -> bool:
@@ -70,17 +106,38 @@ def has_cjk_text(value) -> bool:
     return any("\u4e00" <= char <= "\u9fff" for char in str(value))
 
 
+def remote_detail_text(detail) -> str:
+    if isinstance(detail, str):
+        return detail
+
+    if isinstance(detail, dict):
+        parts = []
+        for key in ("detail", "message", "error", "reason"):
+            value = detail.get(key)
+            if value:
+                parts.append(remote_detail_text(value))
+        return " ".join(part for part in parts if part)
+
+    if isinstance(detail, list):
+        return " ".join(remote_detail_text(item) for item in detail if item)
+
+    return str(detail)
+
+
 def localize_remote_detail(detail):
     if not detail:
         return REMOTE_REQUEST_FAILED_DETAIL
 
     if has_cjk_text(detail):
-        return detail
+        return remote_detail_text(detail)
 
-    if isinstance(detail, str):
-        normalized = detail.strip().lower()
-        if normalized in REMOTE_DETAIL_TRANSLATIONS:
-            return REMOTE_DETAIL_TRANSLATIONS[normalized]
+    normalized = remote_detail_text(detail).strip().lower()
+    if normalized in REMOTE_DETAIL_TRANSLATIONS:
+        return REMOTE_DETAIL_TRANSLATIONS[normalized]
+
+    for keyword in REMOTE_DETAIL_TRANSLATION_ORDER:
+        if keyword in normalized:
+            return REMOTE_DETAIL_TRANSLATIONS[keyword]
 
     return REMOTE_REQUEST_FAILED_DETAIL
 

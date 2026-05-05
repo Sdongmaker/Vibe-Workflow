@@ -116,6 +116,64 @@ class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(context.exception.status_code, 404)
         self.assertEqual(context.exception.detail, "未找到工作流")
 
+    async def test_remote_common_english_details_are_localized(self):
+        cases = [
+            ("Invalid API key provided", "API Key 无效，请检查配置"),
+            ("Unauthorized request", "认证失败，请检查 API Key"),
+            ("Forbidden", "无权访问该资源"),
+            ("Rate limit reached for this API key", "请求过于频繁，请稍后重试"),
+            ("Quota exceeded", "服务额度已用尽，请检查配额或稍后重试"),
+            ("Request timed out", "远程服务响应超时，请稍后重试"),
+            ("Connection refused", "连接远程服务失败，请稍后重试"),
+            ("Bad request: missing input", "请求参数不正确，请检查后重试"),
+            ("Validation error", "请求参数校验失败，请检查后重试"),
+            ("Permission denied", "没有权限执行该操作"),
+            ("Workflow is not editable", "当前工作流不可编辑"),
+            ("Workflow failed during execution", "工作流执行失败，请稍后重试"),
+        ]
+
+        for detail, expected in cases:
+            with self.subTest(detail=detail):
+                self.assertEqual(
+                    self.workflow_helper.localize_remote_detail(detail),
+                    expected,
+                )
+
+    async def test_remote_structured_detail_is_localized(self):
+        self.assertEqual(
+            self.workflow_helper.localize_remote_detail(
+                {"error": {"message": "Invalid API key"}}
+            ),
+            "API Key 无效，请检查配置",
+        )
+        self.assertEqual(
+            self.workflow_helper.localize_remote_detail(
+                [{"msg": "field required"}, {"message": "Validation failed"}]
+            ),
+            "请求参数校验失败，请检查后重试",
+        )
+
+    async def test_remote_plain_text_error_is_localized(self):
+        self.workflow_helper.MU_API_KEY = "real-test-key"
+
+        response = Mock()
+        response.status_code = 429
+        response.content = b"Rate limit exceeded"
+        response.text = "Rate limit exceeded"
+        response.json.side_effect = ValueError("not json")
+
+        with patch("httpx.AsyncClient") as client_class:
+            client = client_class.return_value.__aenter__.return_value
+            client.post.return_value = response
+
+            with self.assertRaises(HTTPException) as context:
+                await self.workflow_helper.proxy_request_helper(
+                    "POST", "https://example.test/workflow", {}
+                )
+
+        self.assertEqual(context.exception.status_code, 429)
+        self.assertEqual(context.exception.detail, "请求过于频繁，请稍后重试")
+
     async def test_router_regular_exception_uses_chinese_detail(self):
         from app.routers import workflow_router
 

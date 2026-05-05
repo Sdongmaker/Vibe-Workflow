@@ -20,7 +20,10 @@ export default function Home() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
-      <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+      <nav
+        aria-label={t("primaryNavAria")}
+        className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto"
+      >
         <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.4)]">
             <GoWorkflow className="text-white" size={20} />
@@ -71,14 +74,18 @@ export default function Home() {
           </Link>
           <button
             type="button"
-            aria-label={t("watchDemo")}
-            title={t("watchDemo")}
+            aria-label={t("watchDemoAria")}
+            title={t("watchDemoAria")}
             className="px-8 py-4 rounded-full font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm"
           >
             {t("watchDemo")}
           </button>
         </div>
-        <div className="mt-20 w-full max-w-5xl rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 shadow-2xl relative group">
+        <div
+          role="img"
+          aria-label={t("heroPreviewAria")}
+          className="mt-20 w-full max-w-5xl rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 shadow-2xl relative group"
+        >
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl opacity-10 group-hover:opacity-20 transition-opacity blur-lg" />
           <div className="aspect-video rounded-xl bg-zinc-900 overflow-hidden relative">
              <div className="absolute inset-0 flex items-center justify-center">
@@ -108,7 +115,10 @@ export default function Home() {
           </div>
         </div>
       </main>
-      <footer className="relative z-10 border-t border-white/5 py-12 px-8">
+      <footer
+        aria-label={t("trustedTeamsAria")}
+        className="relative z-10 border-t border-white/5 py-12 px-8"
+      >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-zinc-500 text-sm italic">
             {t("trustedBy")}

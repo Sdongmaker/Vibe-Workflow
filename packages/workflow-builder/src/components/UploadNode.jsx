@@ -15,7 +15,9 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
   const videoRef = useRef(null);
   const { t, i18n } = useTranslation("nodes");
   const prevFormValues = useRef(formValues);
-  const acceptedTypeLabel = t(acceptType, { defaultValue: t("file") });
+  const acceptedTypeLabel = ["image", "video", "audio"].includes(acceptType)
+    ? t(acceptType)
+    : t("file");
 
   const handleDrop = (e) => {
     e.preventDefault();

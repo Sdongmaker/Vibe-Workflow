@@ -3,9 +3,13 @@
   "heroTitle1": "编排你的",
   "heroTitle2": "创意工作流。",
   "heroSubtitle": "一站式平台，帮助你设计、自动化并规模化创意流程，让想法到执行的衔接更顺畅。",
+  "primaryNavAria": "主导航",
   "exploreWorkflows": "探索工作流",
   "exploreWorkflowsAria": "浏览可用工作流",
   "watchDemo": "观看演示",
+  "watchDemoAria": "观看工作流演示",
+  "heroPreviewAria": "工作流画布视觉预览",
   "trustedBy": "全球 10,000 多个创意团队信赖",
+  "trustedTeamsAria": "受信赖的创意团队",
   "trustedBrands": ["极光", "元像", "核心"]
 }

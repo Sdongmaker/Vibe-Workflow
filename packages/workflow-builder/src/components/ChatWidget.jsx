@@ -158,14 +158,19 @@ const CODE_LANGUAGE_ALIASES = {
   ts: "typescript",
   py: "python",
   sh: "shell",
+  zsh: "shell",
+  yml: "yaml",
   md: "markdown",
 };
 
 const CodeBlock = ({ language, value }) => {
   const [copied, setCopied] = useState(false);
-  const { t } = useTranslation("chat");
+  const { t, i18n } = useTranslation("chat");
   const normalizedLanguage = CODE_LANGUAGE_ALIASES[language] || language;
-  const languageLabel = normalizedLanguage ? t(normalizedLanguage, { defaultValue: normalizedLanguage }) : t("code");
+  const isZh = i18n.language?.startsWith("zh");
+  const languageLabel = normalizedLanguage
+    ? t(normalizedLanguage, { defaultValue: isZh ? t("code") : normalizedLanguage })
+    : t("code");
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
@@ -183,8 +188,8 @@ const CodeBlock = ({ language, value }) => {
           type="button"
           suppressHydrationWarning={true}
           onClick={handleCopy}
-          title={t("copyCode")}
-          aria-label={t("copyCode")}
+          title={copied ? t("copiedCode") : t("copyCode")}
+          aria-label={copied ? t("copiedCode") : t("copyCode")}
           className="flex items-center gap-1.5 text-[10px] font-medium text-gray-400 hover:text-white transition-colors"
         >
           {copied ? (
@@ -482,8 +487,8 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                           suppressHydrationWarning={true}
                           onClick={() => handleCopy(msg.content, idx)}
                           className="text-gray-400 hover:text-blue-500 transition-colors cursor-pointer"
-                          title={t("copy")}
-                          aria-label={t("copyMessage")}
+                          title={copiedId === idx ? t("copiedMessage") : t("copy")}
+                          aria-label={copiedId === idx ? t("copiedMessage") : t("copyMessage")}
                         >
                           {copiedId === idx ? <IoMdCheckmark size={12} className="text-green-500" /> : <FaRegCopy size={12} />}
                         </button>

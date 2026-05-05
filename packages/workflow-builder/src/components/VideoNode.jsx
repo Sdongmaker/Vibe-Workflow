@@ -311,7 +311,7 @@ const VideoGeneration = ({ id, data, selected }) => {
         model: selectedModel.id,
         params: params,
         cost: generationCost,
-        node_id: "AI Video"
+        node_id: t("nodeTypeVideo")
       });
       pollNodeStatus(response.data.run_id);
     } catch(error) {

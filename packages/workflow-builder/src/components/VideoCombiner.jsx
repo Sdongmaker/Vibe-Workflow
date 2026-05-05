@@ -285,7 +285,7 @@ const VideoCombiner = ({ id, data, selected }) => {
         model: selectedModel.id,
         params: params,
         cost: generationCost,
-        node_id: "Video Combiner"
+        node_id: t("nodeTypeVideoCombiner")
       });
       pollNodeStatus(response.data.run_id);
     } catch(error) {

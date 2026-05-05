@@ -296,7 +296,7 @@ const TextGeneration = ({ id, data, selected }) => {
         model: selectedModel.id,
         params: params,
         cost: generationCost,
-        node_id: "AI Text"
+        node_id: t("nodeTypeText")
       });
       pollNodeStatus(response.data.run_id);
     } catch(error) {

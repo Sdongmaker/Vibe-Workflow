@@ -300,7 +300,7 @@ const AudioGeneration = ({ id, data, selected }) => {
         model: selectedModel.id,
         params: params,
         cost: generationCost,
-        node_id: "AI Audio"
+        node_id: t("nodeTypeAudio")
       });
       pollNodeStatus(response.data.run_id);
     } catch(error) {

@@ -164,6 +164,45 @@ const getLocalizedNodeLabel = (t, node) => {
   return number ? `${label} ${number}` : label;
 };
 
+const isChineseLanguage = (i18n) => {
+  const language = (i18n?.resolvedLanguage || i18n?.language || "").toLowerCase();
+  return language.startsWith("zh");
+};
+
+const getLocalizedErrorDetail = (t, i18n, error) => {
+  const detail = error?.response?.data?.detail || error?.message || "";
+
+  if (!isChineseLanguage(i18n)) {
+    return detail || t("serverError");
+  }
+
+  if (!detail || detail === "Network Error") {
+    return t("errorDetailNetwork");
+  }
+
+  if (/timeout|timed out|aborted/i.test(detail)) {
+    return t("errorDetailTimeout");
+  }
+
+  if (/failed to fetch|network|connection|request failed/i.test(detail)) {
+    return t("errorDetailNetwork");
+  }
+
+  if (/unauthori[sz]ed|forbidden|permission|401|403/i.test(detail)) {
+    return t("errorDetailPermission");
+  }
+
+  if (/not found|404/i.test(detail)) {
+    return t("errorDetailNotFound");
+  }
+
+  if (/server|internal|500|502|503|504/i.test(detail)) {
+    return t("serverError");
+  }
+
+  return t("errorDetailGeneric");
+};
+
 const getModelObjStatic = (category, modelId, nodeSchemas) => {
   if (category === "api") {
     // We can't easily access filteredApiNodeModels statically without passing it, 
@@ -247,7 +286,7 @@ const processWorkflowData = (workflowData, nodeSchemas, id) => {
 
 const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
   const params = useParams();
-  const { t } = useTranslation("nodes");
+  const { t, i18n } = useTranslation("nodes");
   const { id } = params;
 
   // Pre-calculate initial state if data is provided
@@ -1336,11 +1375,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       return response.data.workflow_id;
     } catch (error) {
       console.log(error);
-      if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
-      } else {
-        toast.error(t("toastError", { message: error.message }));
-      }
+      toast.error(t("toastFailed", { detail: getLocalizedErrorDetail(t, i18n, error) }));
     }
   };
 
@@ -1356,11 +1391,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     } catch (error) {
       console.log(error);
       setIsRunning(0);
-      if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
-      } else {
-        toast.error(t("toastError", { message: error.message }));
-      }
+      toast.error(t("toastFailed", { detail: getLocalizedErrorDetail(t, i18n, error) }));
     }
   };
 
@@ -1510,11 +1541,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       pollRunIdStatus(newRunId);
     } catch (error) {
       console.log(error);
-      if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
-      } else {
-        toast.error(t("toastError", { message: error.message }));
-      }
+      toast.error(t("toastFailed", { detail: getLocalizedErrorDetail(t, i18n, error) }));
       setLoadingNodes({});
       setIsRunning(0);
     }
@@ -1534,11 +1561,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       setPublishWorkflow(response.data.publish);
     } catch (error) {
       console.log(error);
-      if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
-      } else {
-        toast.error(t("toastError", { message: error.message }));
-      }
+      toast.error(t("toastFailed", { detail: getLocalizedErrorDetail(t, i18n, error) }));
       setLoadingNodes({});
       setIsRunning(0);
     }
@@ -1559,11 +1582,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       setTemplate(prev => ({ ...prev, isPublishedTemplate: is_template }));
     } catch (error) {
       console.log(error);
-      if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
-      } else {
-        toast.error(t("toastError", { message: error.message }));
-      }
+      toast.error(t("toastFailed", { detail: getLocalizedErrorDetail(t, i18n, error) }));
       setIsRunning(0);
     }
   };
@@ -1584,11 +1603,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       toast.success(t("toastCategoryUpdated"));
     } catch (error) {
       console.error("Error updating category:", error);
-      if (error.response) {
-        toast.error(t("toastFailed", { detail: error.response.data.detail || t("serverError") }));
-      } else {
-        toast.error(t("toastError", { message: error.message }));
-      }
+      toast.error(t("toastFailed", { detail: getLocalizedErrorDetail(t, i18n, error) }));
     }
   };
 

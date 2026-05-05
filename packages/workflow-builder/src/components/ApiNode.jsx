@@ -447,7 +447,7 @@ const ApiNode = ({ id, data, selected }) => {
           model: selectedModel.id,
           params: params,
           cost: 0.025,
-          node_id: "API Node"
+          node_id: t("nodeTypeApi")
         }
       );
       pollNodeStatus(response.data.run_id);

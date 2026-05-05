@@ -295,7 +295,7 @@ const ImageGeneration = ({ id, data, selected }) => {
         model: selectedModel.id,
         params: params,
         cost: generationCost,
-        node_id: "AI Image"
+        node_id: t("nodeTypeImage")
       });
       pollNodeStatus(response.data.run_id);
     } catch(error) {
