@@ -26,40 +26,118 @@ const HANDLE_LABEL_KEYS = {
   apiInput2: "images",
   apiInput3: "image",
   concatInput: "prompt",
+  prompt_text: "prompt",
+  promptText: "prompt",
+  text_prompt: "prompt",
+  textPrompt: "prompt",
+  input_text: "inputText",
+  inputText: "inputText",
   image: "image",
+  input_image: "inputImage",
+  inputImage: "inputImage",
+  source_image: "sourceImage",
+  sourceImage: "sourceImage",
+  reference_image: "referenceImage",
+  referenceImage: "referenceImage",
+  reference_images: "referenceImages",
+  referenceImages: "referenceImages",
   images: "images",
   image_url: "imageUrl",
+  imageUrl: "imageUrl",
   image_urls: "imageUrls",
+  imageUrls: "imageUrls",
   images_list: "images",
+  imagesList: "images",
   video: "video",
+  input_video: "inputVideo",
+  inputVideo: "inputVideo",
+  source_video: "sourceVideo",
+  sourceVideo: "sourceVideo",
+  reference_video: "referenceVideo",
+  referenceVideo: "referenceVideo",
   videos: "videos",
   video_url: "videoUrl",
+  videoUrl: "videoUrl",
   videos_list: "videos",
+  videosList: "videos",
   video_files: "videoFiles",
+  videoFiles: "videoFiles",
   audio: "audio",
+  input_audio: "inputAudio",
+  inputAudio: "inputAudio",
+  source_audio: "sourceAudio",
+  sourceAudio: "sourceAudio",
   audios: "audios",
   audio_url: "audioUrl",
+  audioUrl: "audioUrl",
   audios_list: "audios",
+  audiosList: "audios",
   audio_files: "audioFiles",
+  audioFiles: "audioFiles",
   prompt: "prompt",
   system_prompt: "system",
+  systemPrompt: "system",
+  negative_prompt: "negativePrompt",
+  negativePrompt: "negativePrompt",
   last_image: "lastFrame",
+  lastImage: "lastFrame",
+  first_frame: "firstFrame",
+  firstFrame: "firstFrame",
+  first_image: "firstFrame",
+  firstImage: "firstFrame",
+  start_image: "firstFrame",
+  startImage: "firstFrame",
+  end_image: "lastFrame",
+  endImage: "lastFrame",
+  aspect_ratio: "aspectRatio",
+  aspectRatio: "aspectRatio",
   model_name: "modelName",
+  modelName: "modelName",
   model_type: "modelType",
+  modelType: "modelType",
   model_url: "modelUrl",
+  modelUrl: "modelUrl",
   model_id: "modelId",
+  modelId: "modelId",
   task_type: "taskType",
+  taskType: "taskType",
   air_model_id: "airModelId",
+  airModelId: "airModelId",
   api_key: "apiKey",
+  apiKey: "apiKey",
   uid: "userId",
+  user_id: "userId",
+  userId: "userId",
   category: "category",
+  model_category: "category",
+  modelCategory: "category",
   subcategory: "subcategory",
+  model_identifier: "modelIdentifier",
+  modelIdentifier: "modelIdentifier",
+  seed: "seed",
+  width: "width",
+  height: "height",
+  duration: "duration",
+  resolution: "resolution",
+  quality: "quality",
+  style: "style",
 };
 
-const getHandleLabel = (t, handle, index) => {
+const toReadableHandleName = (handle) => (
+  String(handle || "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+);
+
+const getHandleLabel = (t, handle, index, language = "") => {
   if (!handle) return "";
   const labelKey = HANDLE_LABEL_KEYS[handle];
-  return labelKey ? t(labelKey) : t("sendHandleFallback", { index });
+  if (labelKey) return t(labelKey);
+  if (language.toLowerCase().startsWith("zh")) {
+    return t("sendHandleFallback", { index });
+  }
+  return t("fieldLabelFallback", { field: toReadableHandleName(handle), defaultValue: t("sendHandleFallback", { index }) });
 };
 
 const getNodeLabel = (t, nodeId) => {
@@ -82,7 +160,8 @@ const getNodeLabel = (t, nodeId) => {
 const NodeSendButton = ({ id, data, outputHistory, currentHistoryIndex, currentOutputIndex = 0 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const connectedEdges = data.connectedEdges || [];
-  const { t } = useTranslation("nodes");
+  const { t, i18n } = useTranslation("nodes");
+  const activeLanguage = i18n.resolvedLanguage || i18n.language || "";
   if (connectedEdges.length === 0) return null;
 
   const handleSend = (targetId) => {
@@ -127,7 +206,7 @@ const NodeSendButton = ({ id, data, outputHistory, currentHistoryIndex, currentO
             return connectedEdges.map((edge) => {
               targetIndexes[edge.target] = (targetIndexes[edge.target] || 0) + 1;
               const handleLabel = targetCounts[edge.target] > 1
-                ? getHandleLabel(t, edge.targetHandle, targetIndexes[edge.target])
+                ? getHandleLabel(t, edge.targetHandle, targetIndexes[edge.target], activeLanguage)
                 : "";
               const sendLabel = t("sendToNode", { node: getNodeLabel(t, edge.target), handle: handleLabel ? ` (${handleLabel})` : "" });
 

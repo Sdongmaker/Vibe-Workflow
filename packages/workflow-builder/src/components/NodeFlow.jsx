@@ -347,6 +347,27 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isModelDropdownUp, setIsModelDropdownUp] = useState(false);
   const modelDropdownTriggerRef = useRef(null);
+  const workflowNameAutoRef = useRef(!initialState?.metadata?.workflowName);
+  const workflowCategoryAutoRef = useRef(!initialState?.metadata?.category);
+  const categoryInputAutoRef = useRef(!initialState?.metadata?.category);
+
+  useEffect(() => {
+    if (workflowNameAutoRef.current) {
+      setWorkflowName(i18n.t("untitled", { ns: "nodes" }));
+    }
+  }, [i18n.resolvedLanguage]);
+
+  useEffect(() => {
+    if (workflowCategoryAutoRef.current) {
+      setWorkflowCategory(i18n.t("general", { ns: "nodes" }));
+    }
+  }, [i18n.resolvedLanguage]);
+
+  useEffect(() => {
+    if (categoryInputAutoRef.current) {
+      setCategoryInput(i18n.t("general", { ns: "nodes" }));
+    }
+  }, [i18n.resolvedLanguage]);
 
   const { zoomIn, zoomOut, fitView, getNodes, screenToFlowPosition } = useReactFlow();
 
@@ -479,8 +500,12 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
     setEdges(restoredEdges);
     setWorkflowId(id);
     setRunId(workflowData?.run_id);
-    setWorkflowName(workflowData.name);
-    setWorkflowCategory(workflowData?.category || t("general"));
+    setWorkflowName(workflowData.name || i18n.t("untitled", { ns: "nodes" }));
+    setWorkflowCategory(workflowData?.category || i18n.t("general", { ns: "nodes" }));
+    workflowNameAutoRef.current = !workflowData?.name;
+    workflowCategoryAutoRef.current = !workflowData?.category;
+    categoryInputAutoRef.current = !workflowData?.category;
+    setCategoryInput(workflowData?.category || i18n.t("general", { ns: "nodes" }));
     setWorkflowIds(workflowData.workflow_id, workflowData?.run_id);
     setInteractionMode(workflowData.is_owner);
     setPublishWorkflow(workflowData.is_published);
@@ -490,7 +515,7 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
       isPublishedTemplate: workflowData.is_template,
     }));
     setIsRestoring(false);
-  }, [id, nodeSchemas, getModelObj, setNodes, setEdges]);
+  }, [id, nodeSchemas, getModelObj, setNodes, setEdges, i18n]);
 
   useEffect(() => {
     if (initialWorkflowData && nodeSchemas?.categories) {
@@ -2838,7 +2863,10 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
               type="text"
               value={workflowName}
               autoFocus
-              onChange={(e) => setWorkflowName(e.target.value)}
+              onChange={(e) => {
+                workflowNameAutoRef.current = false;
+                setWorkflowName(e.target.value);
+              }}
               placeholder={t("enterWorkflowName")}
               aria-label={t("workflowName")}
               className="border border-gray-700 px-2 py-1.5 text-sm text-white rounded bg-transparent w-full"
@@ -2960,7 +2988,11 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
                   <input
                     type="text"
                     value={categoryInput}
-                    onChange={(e) => setCategoryInput(e.target.value)}
+                    onChange={(e) => {
+                      categoryInputAutoRef.current = false;
+                      workflowCategoryAutoRef.current = false;
+                      setCategoryInput(e.target.value);
+                    }}
                     placeholder={t("enterCategory")}
                     aria-label={t("categoryName")}
                     className="w-full px-4 py-3 bg-[#151618] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:border-gray-600 transition-all"

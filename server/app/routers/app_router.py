@@ -4,6 +4,7 @@ from app.utils.workflow_helper import (
     calculate_dynamic_cost_helper,
     get_file_upload_url_helper,
     public_exception_detail,
+    public_http_exception_detail,
     save_uploaded_file_helper,
 )
 
@@ -17,7 +18,11 @@ async def get_file_upload_url(request: Request):
         return await get_file_upload_url_helper(params)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -27,7 +32,11 @@ async def upload_file(file: UploadFile = File(...)):
         return await save_uploaded_file_helper(file)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -38,5 +47,9 @@ async def calculate_dynamic_cost(request: Request):
         return await calculate_dynamic_cost_helper(payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))

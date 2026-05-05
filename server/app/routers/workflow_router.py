@@ -18,6 +18,7 @@ from app.utils.workflow_helper import (
     get_workflow_last_run,
     poll_architect_result_helper,
     public_exception_detail,
+    public_http_exception_detail,
     publish_workflow_helper,
     run_node_helper,
     run_workflow_helper,
@@ -36,7 +37,11 @@ async def create_workflow(request: Request):
         return await create_or_update_workflow(payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -46,7 +51,11 @@ async def get_workflow_defs():
         return await get_workflow_defs_helper()
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -56,7 +65,11 @@ async def get_workflow_def(workflow_id: str):
         return await get_workflow_def_helper(workflow_id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -66,7 +79,11 @@ async def get_node_schemas(workflow_id: str):
         return await get_node_schemas_helper(workflow_id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -76,7 +93,11 @@ async def delete_workflow_def(workflow_id: str):
         return await delete_workflow_def_by_id(workflow_id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -87,7 +108,11 @@ async def update_workflow_name(workflow_id: str, request: Request):
         return await update_workflow_name_helper(workflow_id, payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -97,7 +122,11 @@ async def get_api_node_schemas(workflow_id: str):
         return await get_api_node_schemas_helper(workflow_id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -108,7 +137,11 @@ async def run_workflow(workflow_id: str, request: Request):
         return await run_workflow_helper(workflow_id, payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -118,7 +151,11 @@ async def get_run_status(run_id: str):
         return await get_run_status_helper(run_id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -129,7 +166,11 @@ async def run_node(workflow_id: str, node_id: str, request: Request):
         return await run_node_helper(workflow_id, node_id, payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -140,7 +181,11 @@ async def publish_workflow(workflow_id: str, request: Request):
         return await publish_workflow_helper(workflow_id, payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -151,7 +196,11 @@ async def template_workflow(workflow_id: str, request: Request):
         return await template_workflow_helper(workflow_id, payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -162,7 +211,11 @@ async def cloudfront_signed_url(request: Request):
         return await cloudfront_signed_url_helper(payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -173,7 +226,11 @@ async def generate_thumbnail(workflow_id: str, request: Request):
         return await generate_thumbnail_helper(workflow_id, payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -183,7 +240,11 @@ async def get_workflow_last_run_endpoint(workflow_id: str):
         return await get_workflow_last_run(workflow_id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -194,7 +255,11 @@ async def architect_workflow_endpoint(request: Request):
         return await architect_workflow_helper(payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -204,7 +269,11 @@ async def poll_architect_result(id: str):
         return await poll_architect_result_helper(id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -214,7 +283,11 @@ async def delete_node_run(node_run_id: str):
         return await delete_node_run_by_id_helper(node_run_id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -225,7 +298,11 @@ async def update_workflow_category(workflow_id: str, request: Request):
         return await update_workflow_category_helper(workflow_id, payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -235,7 +312,11 @@ async def get_workflow_api_inputs(workflow_id: str):
         return await get_workflow_api_inputs_helper(workflow_id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -246,7 +327,11 @@ async def execute_workflow_via_api(workflow_id: str, request: Request):
         return await execute_workflow_via_api_helper(workflow_id, payload)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))
 
 
@@ -256,5 +341,9 @@ async def get_workflow_api_outputs(run_id: str):
         return await get_workflow_api_outputs_helper(run_id)
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise e
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=public_http_exception_detail(e),
+                headers=e.headers,
+            )
         raise HTTPException(status_code=400, detail=public_exception_detail(e))

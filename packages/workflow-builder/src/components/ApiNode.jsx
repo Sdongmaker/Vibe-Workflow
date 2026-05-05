@@ -20,40 +20,119 @@ const outputHandles = [
 ];
 
 const FIELD_LABEL_KEYS = {
+  prompt_text: "prompt",
+  promptText: "prompt",
+  text_prompt: "prompt",
+  textPrompt: "prompt",
+  input_text: "inputText",
+  inputText: "inputText",
   image: "image",
+  input_image: "inputImage",
+  inputImage: "inputImage",
+  source_image: "sourceImage",
+  sourceImage: "sourceImage",
+  reference_image: "referenceImage",
+  referenceImage: "referenceImage",
+  reference_images: "referenceImages",
+  referenceImages: "referenceImages",
   images: "images",
   image_url: "imageUrl",
+  imageUrl: "imageUrl",
   image_urls: "imageUrls",
+  imageUrls: "imageUrls",
   images_list: "images",
+  imagesList: "images",
   video: "video",
+  input_video: "inputVideo",
+  inputVideo: "inputVideo",
+  source_video: "sourceVideo",
+  sourceVideo: "sourceVideo",
+  reference_video: "referenceVideo",
+  referenceVideo: "referenceVideo",
   videos: "videos",
   video_url: "videoUrl",
+  videoUrl: "videoUrl",
   videos_list: "videos",
+  videosList: "videos",
   video_files: "videoFiles",
+  videoFiles: "videoFiles",
   audio: "audio",
+  input_audio: "inputAudio",
+  inputAudio: "inputAudio",
+  source_audio: "sourceAudio",
+  sourceAudio: "sourceAudio",
   audios: "audios",
   audio_url: "audioUrl",
+  audioUrl: "audioUrl",
   audios_list: "audios",
+  audiosList: "audios",
   audio_files: "audioFiles",
+  audioFiles: "audioFiles",
   prompt: "prompt",
   system_prompt: "system",
+  systemPrompt: "system",
+  negative_prompt: "negativePrompt",
+  negativePrompt: "negativePrompt",
   last_image: "lastFrame",
+  lastImage: "lastFrame",
+  first_frame: "firstFrame",
+  firstFrame: "firstFrame",
+  first_image: "firstFrame",
+  firstImage: "firstFrame",
+  start_image: "firstFrame",
+  startImage: "firstFrame",
+  end_image: "lastFrame",
+  endImage: "lastFrame",
+  aspect_ratio: "aspectRatio",
+  aspectRatio: "aspectRatio",
   model_name: "modelName",
+  modelName: "modelName",
   model_type: "modelType",
+  modelType: "modelType",
   model_url: "modelUrl",
+  modelUrl: "modelUrl",
   model_id: "modelId",
+  modelId: "modelId",
   task_type: "taskType",
+  taskType: "taskType",
   air_model_id: "airModelId",
+  airModelId: "airModelId",
   api_key: "apiKey",
+  apiKey: "apiKey",
   uid: "userId",
   user_id: "userId",
+  userId: "userId",
   category: "category",
+  model_category: "category",
+  modelCategory: "category",
   subcategory: "subcategory",
+  model_identifier: "modelIdentifier",
+  modelIdentifier: "modelIdentifier",
+  seed: "seed",
+  width: "width",
+  height: "height",
+  duration: "duration",
+  resolution: "resolution",
+  quality: "quality",
+  style: "style",
 };
 
-const getFieldLabel = (t, key) => {
+const toReadableFieldName = (fieldName) => (
+  String(fieldName || "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+);
+
+const getFieldLabel = (t, key, language = "") => {
   const labelKey = FIELD_LABEL_KEYS[key];
-  return labelKey ? t(labelKey, { defaultValue: key }) : key;
+  if (labelKey) return t(labelKey, { defaultValue: key });
+
+  if (language.toLowerCase().startsWith("zh")) {
+    return t("fieldLabelFallbackShort", { defaultValue: "字段" });
+  }
+
+  return t("fieldLabelFallback", { field: toReadableFieldName(key), defaultValue: key });
 };
 
 const ApiNode = ({ id, data, selected }) => {
@@ -508,7 +587,7 @@ const ApiNode = ({ id, data, selected }) => {
     const missingFields = requiredFields.filter(field => !formValues?.[field] || !formValues[field].trim());
 
     if (missingFields.length > 0) {
-      toast.error(t("requiredBeforeFetchingSchema", { fields: missingFields.map((field) => getFieldLabel(t, field)).join(", ") }));
+      toast.error(t("requiredBeforeFetchingSchema", { fields: missingFields.map((field) => getFieldLabel(t, field, activeLanguage)).join(", ") }));
       return;
     }
 
@@ -899,7 +978,7 @@ const ApiNode = ({ id, data, selected }) => {
               }`}
                style={{ top: 150 + idx * 50, opacity: isExposed ? undefined : 0, pointerEvents: isExposed ? 'all' : 'none' }} 
             > 
-              {getFieldLabel(t, key)}
+              {getFieldLabel(t, key, activeLanguage)}
             </p>
           </React.Fragment>
         );

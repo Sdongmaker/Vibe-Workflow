@@ -130,3 +130,21 @@ class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(context.exception.status_code, 400)
         self.assertEqual(context.exception.detail, "请求处理失败，请稍后重试")
+
+    async def test_router_http_exception_detail_is_localized(self):
+        from app.routers import workflow_router
+
+        original_helper = workflow_router.get_workflow_defs_helper
+
+        async def raise_english_http_exception():
+            raise HTTPException(status_code=401, detail="Invalid API key")
+
+        workflow_router.get_workflow_defs_helper = raise_english_http_exception
+        try:
+            with self.assertRaises(HTTPException) as context:
+                await workflow_router.get_workflow_defs()
+        finally:
+            workflow_router.get_workflow_defs_helper = original_helper
+
+        self.assertEqual(context.exception.status_code, 401)
+        self.assertEqual(context.exception.detail, "API Key 无效，请检查配置")
