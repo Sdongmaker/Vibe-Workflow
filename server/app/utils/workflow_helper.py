@@ -1,27 +1,34 @@
-import os
-import httpx
-import logging
+from __future__ import annotations
+
 import json
+import logging
+import re
 import uuid
-from fastapi import HTTPException
-from typing import Optional
+from copy import deepcopy
 from datetime import datetime, timezone
-
 from pathlib import Path
+from typing import Any
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+from fastapi import HTTPException, UploadFile
+
+from app.providers.factory import get_provider
+from app.providers.openai_compatible import OpenAICompatibleProvider
+from app.settings import get_settings
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-MU_API_KEY = os.getenv("MU_API_KEY")
-LOCAL_STORE_PATH = Path(
-    os.getenv("LOCAL_WORKFLOW_STORE", BASE_DIR / ".local_workflows.json")
-)
-PLACEHOLDER_API_KEYS = {"", "your_api_key_here", "your_actual_api_key_here"}
+
+def active_provider():
+    return get_provider()
+
+
+def local_store_path() -> Path:
+    return get_settings().local_workflow_store
 
 
 def use_local_workflow_store() -> bool:
-    return (MU_API_KEY or "").strip() in PLACEHOLDER_API_KEYS
+    return True
 
 
 def utc_now() -> str:
@@ -29,19 +36,25 @@ def utc_now() -> str:
 
 
 def read_local_workflows() -> dict:
-    if not LOCAL_STORE_PATH.exists():
-        return {"workflows": {}}
+    path = local_store_path()
+    if not path.exists():
+        return {"workflows": {}, "runs": {}}
 
     try:
-        return json.loads(LOCAL_STORE_PATH.read_text())
+        store = json.loads(path.read_text())
     except json.JSONDecodeError:
         logger.warning("Local workflow store is invalid; starting with an empty store")
-        return {"workflows": {}}
+        return {"workflows": {}, "runs": {}}
+
+    store.setdefault("workflows", {})
+    store.setdefault("runs", {})
+    return store
 
 
 def write_local_workflows(store: dict) -> None:
-    LOCAL_STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    LOCAL_STORE_PATH.write_text(json.dumps(store, indent=2))
+    path = local_store_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(store, indent=2))
 
 
 def local_workflow_response(workflow_id: str, workflow: dict) -> dict:
@@ -72,8 +85,8 @@ def local_workflow_list_item(workflow_id: str, workflow: dict) -> dict:
 
 def local_schema_model(
     title: str,
-    properties: Optional[dict] = None,
-    required: Optional[list] = None,
+    properties: dict | None = None,
+    required: list | None = None,
 ) -> dict:
     input_schema = {
         "schemas": {
@@ -88,8 +101,8 @@ def local_schema_model(
     return {"input_schema": input_schema}
 
 
-def local_passthrough_schemas() -> dict:
-    text_prompt = {
+def _text_prompt_schema() -> dict:
+    return {
         "prompt": {
             "type": "string",
             "title": "Prompt",
@@ -98,11 +111,21 @@ def local_passthrough_schemas() -> dict:
             "default": "",
         }
     }
-    url_field = {
+
+
+def _url_field(title: str, name: str, description: str) -> dict:
+    return {
         "type": "string",
         "format": "uri",
+        "title": title,
+        "name": name,
+        "description": description,
         "default": "",
     }
+
+
+def local_passthrough_schemas() -> dict:
+    text_prompt = _text_prompt_schema()
 
     return {
         "categories": {
@@ -118,12 +141,9 @@ def local_passthrough_schemas() -> dict:
                     "image-passthrough": local_schema_model(
                         "Input Image",
                         {
-                            "image_url": {
-                                **url_field,
-                                "title": "Image URL",
-                                "name": "image_url",
-                                "description": "URL of the input image.",
-                            }
+                            "image_url": _url_field(
+                                "Image URL", "image_url", "URL of the input image."
+                            )
                         },
                         ["image_url"],
                     )
@@ -134,12 +154,9 @@ def local_passthrough_schemas() -> dict:
                     "video-passthrough": local_schema_model(
                         "Input Video",
                         {
-                            "video_url": {
-                                **url_field,
-                                "title": "Video URL",
-                                "name": "video_url",
-                                "description": "URL of the input video.",
-                            }
+                            "video_url": _url_field(
+                                "Video URL", "video_url", "URL of the input video."
+                            )
                         },
                         ["video_url"],
                     )
@@ -150,12 +167,9 @@ def local_passthrough_schemas() -> dict:
                     "audio-passthrough": local_schema_model(
                         "Input Audio",
                         {
-                            "audio_url": {
-                                **url_field,
-                                "title": "Audio URL",
-                                "name": "audio_url",
-                                "description": "URL of the input audio.",
-                            }
+                            "audio_url": _url_field(
+                                "Audio URL", "audio_url", "URL of the input audio."
+                            )
                         },
                         ["audio_url"],
                     )
@@ -189,6 +203,68 @@ def local_passthrough_schemas() -> dict:
             "api": {"models": {}},
         }
     }
+
+
+def _filter_categories_by_capabilities(schemas: dict, provider) -> dict:
+    filtered = deepcopy(schemas)
+    categories = filtered.get("categories", {})
+    for category in list(categories.keys()):
+        if not provider.capability(category):
+            categories.pop(category, None)
+    utility_models = categories.get("utility", {}).get("models", {})
+    if not provider.capability("video"):
+        utility_models.pop("video-combiner", None)
+    filtered["categories"] = categories
+    return filtered
+
+
+def openai_node_schemas() -> dict:
+    settings = get_settings()
+    schemas = local_passthrough_schemas()
+    schemas["categories"]["text"]["models"]["openai-chat"] = local_schema_model(
+        "OpenAI-compatible Chat",
+        {
+            "prompt": {
+                "type": "string",
+                "title": "Prompt",
+                "name": "prompt",
+                "description": "User message for the configured OpenAI-compatible model.",
+                "default": "",
+            },
+            "system_prompt": {
+                "type": "string",
+                "title": "System Prompt",
+                "name": "system_prompt",
+                "description": "Optional system instruction.",
+                "default": "",
+            },
+            "model": {
+                "type": "string",
+                "title": "Model",
+                "name": "model",
+                "description": "Model ID. Leave empty to use OPENAI_MODEL.",
+                "default": settings.openai_model,
+            },
+            "temperature": {
+                "type": "number",
+                "title": "Temperature",
+                "name": "temperature",
+                "default": 0.7,
+            },
+        },
+        ["prompt"],
+    )
+    return schemas
+
+
+def provider_node_schemas() -> dict:
+    provider = active_provider()
+    if provider.kind == "openai-compatible":
+        return _filter_categories_by_capabilities(openai_node_schemas(), provider)
+    return _filter_categories_by_capabilities(
+        provider.node_schemas() or local_passthrough_schemas(),
+        provider,
+    )
 
 
 async def create_or_update_local_workflow(payload: dict):
@@ -270,158 +346,275 @@ async def update_local_workflow_category(workflow_id: str, payload: dict):
     write_local_workflows(store)
     return {"status": "updated"}
 
-async def get_api_key():
-    api_key = MU_API_KEY
-    if not api_key or api_key.strip() in PLACEHOLDER_API_KEYS:
-        raise HTTPException(status_code=400, detail="Setup MU_API_KEY in .env to be able to use Workflow")
-    return api_key
 
-async def proxy_request_helper(method: str, url: str, payload: Optional[dict] = None):
-    api_key = await get_api_key()
-    headers = {
-        "Content-Type": "application/json",
-        "x-api-key": api_key,
+def _node_run_entry(node_id: str, output_type: str, value: str) -> dict[str, Any]:
+    result_id = f"result-{uuid.uuid4().hex}"
+    return {
+        "id": f"node-run-{uuid.uuid4().hex}",
+        "node_id": node_id,
+        "status": "succeeded",
+        "started_at": utc_now(),
+        "completed_at": utc_now(),
+        "result": {
+            "id": result_id,
+            "outputs": [
+                {
+                    "type": output_type,
+                    "value": value,
+                }
+            ],
+        },
     }
 
-    async with httpx.AsyncClient() as client:
-        try:
-            if method.upper() == "GET":
-                response = await client.get(url, headers=headers, timeout=60.0)
-            elif method.upper() == "POST":
-                response = await client.post(url, json=payload, headers=headers, timeout=60.0)
-            elif method.upper() == "DELETE":
-                response = await client.delete(url, headers=headers, timeout=60.0)
-            else:
-                raise HTTPException(status_code=405, detail=f"Method {method} not supported in proxy")
 
-        except httpx.RequestError as e:
-            logger.error(f"HTTPExt Request Error for {method} {url}: {e}")
-            raise HTTPException(status_code=500, detail=f"Error contacting remote server: {str(e)}")
-        except Exception as e:
-            logger.error(f"Unexpected error in proxy_request_helper for {method} {url}: {e}")
-            raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+def _resolve_template(value: Any, results: dict[str, dict]) -> Any:
+    if isinstance(value, list):
+        return [_resolve_template(item, results) for item in value]
+    if not isinstance(value, str):
+        return value
 
-    try:
-        if response.content:
-            resp_json = response.json()
-        else:
-            resp_json = {}
-    except ValueError:
-        resp_json = {"detail": response.text or "Unknown error from remote server"}
+    pattern = r"\{\{\s*([^.{}\s]+)\.outputs\[0\]\.value\s*\}\}"
 
-    if response.status_code == 200:
-        return resp_json
+    def replace(match):
+        node_id = match.group(1)
+        return (
+            results.get(node_id, {})
+            .get("result", {})
+            .get("outputs", [{}])[0]
+            .get("value", "")
+        )
+
+    return re.sub(pattern, replace, value)
+
+
+def _prompt_from_params(params: dict[str, Any]) -> str:
+    prompt = params.get("prompt") or params.get("text") or ""
+    if isinstance(prompt, list):
+        return " ".join(str(item) for item in prompt)
+    return str(prompt)
+
+
+async def _run_openai_text_node(node_id: str, params: dict[str, Any]) -> dict[str, Any]:
+    provider = active_provider()
+    prompt = _prompt_from_params(params)
+    model = params.get("model") or "gpt-4o-mini"
+    messages = []
+    if params.get("system_prompt"):
+        messages.append({"role": "system", "content": params["system_prompt"]})
+    messages.append({"role": "user", "content": prompt})
+
+    if isinstance(provider, OpenAICompatibleProvider):
+        response = await provider.chat_completions(
+            {
+                "model": model,
+                "messages": messages,
+                "temperature": params.get("temperature", 0.7),
+            }
+        )
+        value = (
+            response.get("choices", [{}])[0]
+            .get("message", {})
+            .get("content", "")
+        )
     else:
-        error_detail = resp_json.get("detail", "Something went wrong")
-        logger.warning(f"Remote server returned {response.status_code}: {error_detail}")
-        raise HTTPException(status_code=response.status_code, detail=error_detail)
+        value = prompt
+
+    return _node_run_entry(node_id, "text", value)
+
+
+async def _execute_local_node(node: dict, results: dict[str, dict]) -> dict[str, Any]:
+    node_id = node.get("id") or f"node-{uuid.uuid4().hex}"
+    category = node.get("category")
+    model = node.get("model")
+    raw_params = node.get("params") or node.get("input_params") or {}
+    params = _resolve_template(raw_params, results)
+
+    if model == "prompt-concatenator":
+        return _node_run_entry(node_id, "text", _prompt_from_params(params))
+    if category == "text" and model == "openai-chat":
+        return await _run_openai_text_node(node_id, params)
+    if category == "text":
+        return _node_run_entry(node_id, "text", _prompt_from_params(params))
+    if category == "image":
+        return _node_run_entry(node_id, "image_url", params.get("image_url") or "")
+    if category == "video":
+        return _node_run_entry(node_id, "video_url", params.get("video_url") or "")
+    if category == "audio":
+        return _node_run_entry(node_id, "audio_url", params.get("audio_url") or "")
+    return _node_run_entry(node_id, "text", _prompt_from_params(params))
+
+
+async def run_local_workflow(workflow_id: str) -> dict:
+    store = read_local_workflows()
+    workflow = store.get("workflows", {}).get(workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
+    run_id = f"run-{uuid.uuid4().hex}"
+    nodes = workflow.get("data", {}).get("nodes", [])
+    results: dict[str, dict] = {}
+
+    for node in nodes:
+        result = await _execute_local_node(node, results)
+        results[node["id"]] = result
+
+    store.setdefault("runs", {})[run_id] = {"run_id": run_id, "nodes": results}
+    workflow["run_id"] = run_id
+    workflow["run_history"] = {
+        node_id: [run_entry] for node_id, run_entry in results.items()
+    }
+    workflow["updated_at"] = utc_now()
+    write_local_workflows(store)
+    return {"run_id": run_id}
+
+
+async def run_local_node(workflow_id: str, node_id: str, payload: dict) -> dict:
+    store = read_local_workflows()
+    workflow = store.get("workflows", {}).get(workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
+    run_id = payload.get("run_id") or f"run-{uuid.uuid4().hex}"
+    node = {
+        "id": node_id,
+        "category": _category_from_model(payload.get("model")),
+        "model": payload.get("model"),
+        "params": payload.get("params") or {},
+    }
+    result = await _execute_local_node(node, {})
+
+    runs = store.setdefault("runs", {})
+    run = runs.setdefault(run_id, {"run_id": run_id, "nodes": {}})
+    run.setdefault("nodes", {})[node_id] = result
+    workflow.setdefault("run_history", {}).setdefault(node_id, []).append(result)
+    workflow["run_id"] = run_id
+    workflow["updated_at"] = utc_now()
+    write_local_workflows(store)
+    return {"run_id": run_id}
+
+
+def _category_from_model(model: str | None) -> str:
+    if not model:
+        return "text"
+    if model.startswith("image-"):
+        return "image"
+    if model.startswith("video-"):
+        return "video"
+    if model.startswith("audio-"):
+        return "audio"
+    return "text"
+
 
 async def create_or_update_workflow(payload: dict):
-    if use_local_workflow_store():
-        return await create_or_update_local_workflow(payload)
-    url = "https://api.muapi.ai/workflow/create"
-    return await proxy_request_helper("POST", url, payload)
+    return await create_or_update_local_workflow(payload)
+
 
 async def get_node_schemas_helper(workflow_id: str):
-    if use_local_workflow_store():
-        return local_passthrough_schemas()
-    url = f"https://api.muapi.ai/workflow/{workflow_id}/node-schemas"
-    return await proxy_request_helper("GET", url)
+    return provider_node_schemas()
+
 
 async def get_api_node_schemas_helper(workflow_id: str):
-    if use_local_workflow_store():
-        return {"api_node_schemas": {}}
-    url = f"https://api.muapi.ai/workflow/{workflow_id}/api-node-schemas"
-    return await proxy_request_helper("GET", url)
+    return active_provider().api_node_schemas(workflow_id)
+
 
 async def get_workflow_def_helper(workflow_id: str):
-    if use_local_workflow_store():
-        return await get_local_workflow_def(workflow_id)
-    url = f"https://api.muapi.ai/workflow/get-workflow-def/{workflow_id}"
-    return await proxy_request_helper("GET", url)
+    return await get_local_workflow_def(workflow_id)
+
 
 async def get_workflow_defs_helper():
-    if use_local_workflow_store():
-        return await get_local_workflow_defs()
-    url = "https://api.muapi.ai/workflow/get-workflow-defs"
-    return await proxy_request_helper("GET", url)
+    return await get_local_workflow_defs()
+
 
 async def delete_workflow_def_by_id(workflow_id: str):
-    if use_local_workflow_store():
-        return await delete_local_workflow_def(workflow_id)
-    url = f"https://api.muapi.ai/workflow/delete-workflow-def/{workflow_id}"
-    return await proxy_request_helper("DELETE", url)
+    return await delete_local_workflow_def(workflow_id)
+
 
 async def update_workflow_name_helper(workflow_id: str, payload: dict):
-    if use_local_workflow_store():
-        return await update_local_workflow_name(workflow_id, payload)
-    url = f"https://api.muapi.ai/workflow/update-name/{workflow_id}"
-    return await proxy_request_helper("POST", url, payload)
+    return await update_local_workflow_name(workflow_id, payload)
+
 
 async def run_workflow_helper(workflow_id: str, payload: dict):
-    url = f"https://api.muapi.ai/workflow/{workflow_id}/run"
-    return await proxy_request_helper("POST", url, payload)
+    return await run_local_workflow(workflow_id)
+
 
 async def get_run_status_helper(run_id: str):
-    url = f"https://api.muapi.ai/workflow/run/{run_id}/status"
-    return await proxy_request_helper("GET", url)
+    run = read_local_workflows().get("runs", {}).get(run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return {"run_id": run_id, "nodes": {k: [v] for k, v in run.get("nodes", {}).items()}}
+
 
 async def run_node_helper(workflow_id: str, node_id: str, payload: dict):
-    url = f"https://api.muapi.ai/workflow/{workflow_id}/node/{node_id}/run"
-    return await proxy_request_helper("POST", url, payload)
+    return await run_local_node(workflow_id, node_id, payload)
+
 
 async def publish_workflow_helper(workflow_id: str, payload: dict):
-    url = f"https://api.muapi.ai/workflow/workflow/{workflow_id}/publish"
-    return await proxy_request_helper("POST", url, payload)
+    return {"publish": bool(payload.get("publish"))}
+
 
 async def template_workflow_helper(workflow_id: str, payload: dict):
-    url = f"https://api.muapi.ai/workflow/workflow/{workflow_id}/template"
-    return await proxy_request_helper("POST", url, payload)
+    return {"is_template": bool(payload.get("is_template"))}
+
 
 async def cloudfront_signed_url_helper(payload: dict):
-    url = "https://api.muapi.ai/workflow/cloudfront-signed-url"
-    return await proxy_request_helper("POST", url, payload)
+    return {"signed_url": payload.get("url")}
+
 
 async def generate_thumbnail_helper(workflow_id: str, payload: dict):
-    url = f"https://api.muapi.ai/workflow/{workflow_id}/thumbnail"
-    return await proxy_request_helper("POST", url, payload)
+    return {"thumbnail": payload.get("thumbnail") or payload.get("url")}
+
+
+async def save_uploaded_file_helper(file: UploadFile):
+    content = await file.read()
+    return await active_provider().upload_asset(
+        file.filename or "upload.bin", content, file.content_type
+    )
+
 
 async def get_file_upload_url_helper(params: dict):
-    import urllib.parse
-    query_string = urllib.parse.urlencode(params)
-    url = f"https://api.muapi.ai/app/get_file_upload_url?{query_string}"
-    return await proxy_request_helper("GET", url)
+    filename = params.get("filename") or "upload.bin"
+    return {
+        "upload_url": "/api/app/upload_file",
+        "method": "POST",
+        "field": "file",
+        "url": "/api/app/upload_file",
+        "fields": {"key": filename},
+    }
+
+
+async def calculate_dynamic_cost_helper(payload: dict):
+    return {"cost": None}
+
 
 async def get_workflow_last_run(workflow_id: str):
-    url = f"https://api.muapi.ai/workflow/get-workflow-last-run/{workflow_id}"
-    return await proxy_request_helper("GET", url)
+    workflow = await get_local_workflow_def(workflow_id)
+    run_id = workflow.get("run_id")
+    return {"run_id": run_id, "nodes": workflow.get("run_history", {})}
+
 
 async def architect_workflow_helper(payload: dict):
-    url = "https://api.muapi.ai/workflow/architect"
-    return await proxy_request_helper("POST", url, payload)
+    return {"request_id": f"architect-{uuid.uuid4().hex}", "status": "completed"}
+
 
 async def poll_architect_result_helper(id: str):
-    url = f"https://api.muapi.ai/workflow/poll-architect/{id}/result"
-    return await proxy_request_helper("GET", url)
+    return {"status": "completed", "message": "", "suggestions": [], "workflow": None}
+
 
 async def delete_node_run_by_id_helper(node_run_id: str):
-    url = f"https://api.muapi.ai/workflow/node-run/{node_run_id}"
-    return await proxy_request_helper("DELETE", url)
+    return {"status": "deleted"}
+
 
 async def update_workflow_category_helper(workflow_id: str, payload: dict):
-    if use_local_workflow_store():
-        return await update_local_workflow_category(workflow_id, payload)
-    url = f"https://api.muapi.ai/workflow/update-category/{workflow_id}"
-    return await proxy_request_helper("POST", url, payload)
+    return await update_local_workflow_category(workflow_id, payload)
+
 
 async def get_workflow_api_inputs_helper(workflow_id: str):
-    url = f"https://api.muapi.ai/workflow/{workflow_id}/api-inputs"
-    return await proxy_request_helper("GET", url)
+    return {"inputs": []}
+
 
 async def execute_workflow_via_api_helper(workflow_id: str, payload: dict):
-    url = f"https://api.muapi.ai/workflow/{workflow_id}/api-execute"
-    return await proxy_request_helper("POST", url, payload)
+    return await run_local_workflow(workflow_id)
+
 
 async def get_workflow_api_outputs_helper(run_id: str):
-    url = f"https://api.muapi.ai/workflow/run/{run_id}/api-outputs"
-    return await proxy_request_helper("GET", url)
+    return await get_run_status_helper(run_id)

@@ -28,7 +28,7 @@ import TextGeneration from "./TextNode";
 import ImageGeneration from "./ImageNode";
 import VideoGeneration from "./VideoNode";
 import { setWorkflowIds } from "./WorkflowStore";
-import { apiNodeModels, audioModels, concatModels, imageModels, textModels, videoModels, videoCombinerModels, presets } from "./utility";
+import { apiNodeModels, presets } from "./utility";
 import Link from "next/link";
 import RenderField from "./RenderField";
 import PromptConcate from "./PromptConcate";
@@ -313,6 +313,17 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
   const filteredApiNodeModels = apiNodeModels.filter(model =>
     apiModelsFromBackend.includes(model.id)
   );
+  const utilityModels = useMemo(() => {
+    const modelsMap = nodeSchemas?.categories?.utility?.models;
+    if (!modelsMap) return [];
+
+    return Object.entries(modelsMap).map(([modelId, model]) => ({
+      ...model,
+      id: modelId,
+      name: SPECIAL_MODEL_NAMES[modelId] || formatName(modelId),
+      type: modelId === "video-combiner" ? "vidConcatNode" : "concatNode",
+    }));
+  }, [nodeSchemas]);
 
   const loadPreset = (preset) => {
     setIsPresetsDismissed(true);
@@ -2315,22 +2326,19 @@ const NodeFlow = ({ initialNodeSchemas, initialWorkflowData }) => {
             <div className="absolute left-14 top-0 bg-[#1b1e23] border border-gray-700 p-3 rounded-lg flex flex-col gap-2 w-52">
               <h3 className="w-full text-center text-sm text-gray-300">{t("utilityNode")}</h3>
               <div className="flex flex-col gap-2 w-full">
-                <button
-                  type="button"
-                  suppressHydrationWarning={true}
-                  onClick={() => addNode("concatNode", null, { selectedModel: concatModels[0] })}
-                  className="flex gap-2 justify-center items-center py-3 px-4 text-white cursor-pointer bg-[#2c3037] rounded hover:bg-[#212326]"
-                >
-                  <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">{t("promptConcatenator")}</span>
-                </button>
-                <button
-                  type="button"
-                  suppressHydrationWarning={true}
-                  onClick={() => addNode("vidConcatNode", null, { selectedModel: videoCombinerModels[0] })}
-                  className="flex gap-2 justify-center items-center py-3 px-4 text-white cursor-pointer bg-[#2c3037] rounded hover:bg-[#212326]"
-                >
-                  <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">{t("videoCombiner")}</span>
-                </button>
+                {utilityModels.length > 0 ? utilityModels.map((model) => (
+                  <button
+                    type="button"
+                    suppressHydrationWarning={true}
+                    key={model.id}
+                    onClick={() => addNode(model.type, null, { selectedModel: model })}
+                    className="flex gap-2 justify-center items-center py-3 px-4 text-white cursor-pointer bg-[#2c3037] rounded hover:bg-[#212326]"
+                  >
+                    <TbArrowMerge className="rotate-90" /> <span className="text-xs font-medium">{model.name}</span>
+                  </button>
+                )) : (
+                  <p className="text-center text-xs text-gray-500 py-3">{t("noItems")}</p>
+                )}
               </div>
             </div>
           )}

@@ -1,5 +1,3 @@
-import axios from "axios";
-import Image from "next/image";
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { FaAngleDown } from "react-icons/fa6";
 import { FiUpload } from "react-icons/fi";
@@ -9,6 +7,7 @@ import { IoCloudUploadOutline } from "react-icons/io5";
 import { Handle, Position } from "reactflow";
 import { TbBoxModel2, TbExternalLink } from "react-icons/tb";
 import { useTranslation } from "react-i18next";
+import { uploadFile } from "./uploadFile";
 import "../i18n";
 
 const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handleChange, hasHandle = false, exposedHandles = [], onToggleHandle }) => {
@@ -22,7 +21,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
 
   const isImageUrl = (url) => {
     if (typeof url !== 'string') return false;
-    return url.match(/\.(jpeg|jpg|gif|png|webp|avif|HEIC)(\?.*)?$/i) !== null || url.startsWith('https://cdn.muapi.ai/');
+    return url.match(/\.(jpeg|jpg|gif|png|webp|avif|HEIC)(\?.*)?$/i) !== null || url.startsWith('/media/');
   };
 
   const isImageField = ['image', 'last_image', 'image_url'].includes(meta.field) || 
@@ -83,39 +82,23 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
     };
 
     setUploading(true);
-    axios.get("/api/app/get_file_upload_url", {
-      params: { filename: file.name }
-    })
-    .then((response) => {
-      const { url, fields } = response.data;
+    uploadFile(file, (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadProgress(percentCompleted);
+      })
+    .then((uploadedUrl) => {
+      setFormValues((prev) => {
+        const current = prev[field];
+        const updatedValue = fieldSchema.type === 'array'
+          ? [...(current || []), uploadedUrl]
+          : uploadedUrl
 
-      const formData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
+          return { ...prev, [field]: updatedValue };
       });
-      formData.append("file", file);
-      axios.post(url, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
-        }
-      })
-      .then(() => {
-        const uploadedUrl = `https://cdn.muapi.ai/${fields.key}`;
-        setFormValues((prev) => { 
-          const current = prev[field];
-          const updatedValue = fieldSchema.type === 'array'
-            ? [...(current || []), uploadedUrl]
-            : uploadedUrl
-
-            return { ...prev, [field]: updatedValue };
-        });
-        setTimeout(() => {
-          setUploading(false);
-          setUploadProgress(0);
-        }, 500);
-      })
+      setTimeout(() => {
+        setUploading(false);
+        setUploadProgress(0);
+      }, 500);
     })
     .catch((error) => {
       console.error("Upload failed", error);

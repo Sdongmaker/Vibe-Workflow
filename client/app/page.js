@@ -24,11 +24,10 @@ export default function Home() {
         <div className="flex items-center gap-3">
           <LanguageSwitcher />
           <Link
-            href="https://muapi.ai/access-keys"
-            target="_blank"
+            href="/workflow"
             className="bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 px-5 py-2 rounded-full text-sm font-medium transition-all"
           >
-            {t("getApiKey", { ns: "common" })}
+            {t("openBuilder", { ns: "common" })}
           </Link>
         </div>
       </nav>

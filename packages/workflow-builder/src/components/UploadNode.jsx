@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { FiUpload } from "react-icons/fi";
-import axios from "axios";
 import AudioPlayer from "./AudioPlayer";
 import VideoPlayer from "./VideoPlayer";
 import { IoImageOutline, IoTrashOutline } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
+import { uploadFile } from "./uploadFile";
 import "../i18n";
 
 const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loading, uploadType, acceptType }) => {
@@ -51,34 +51,17 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
     };
 
     setUploading(true);
-    axios.get("/api/app/get_file_upload_url", {
-      params: { filename: file.name }
-    })
-    .then((response) => {
-      const { url, fields } = response.data;
-
-      const formData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      formData.append("file", file);
-      axios.post(url, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
-        }
+    uploadFile(file, (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadProgress(percentCompleted);
       })
-      .then(() => {
-        const prefix = "https://cdn.muapi.ai/";
-        const uploadedUrl = prefix + fields.key;
-        setFormValues(prev => ({ ...prev, [type]: uploadedUrl }));
+    .then((uploadedUrl) => {
+      setFormValues(prev => ({ ...prev, [type]: uploadedUrl }));
 
-        setTimeout(() => {
-          setUploading(false);
-          setUploadProgress(0);
-        }, 500);
-      })
+      setTimeout(() => {
+        setUploading(false);
+        setUploadProgress(0);
+      }, 500);
     })
     .catch((error) => {
       console.error("Upload failed", error);

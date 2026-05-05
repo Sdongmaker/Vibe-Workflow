@@ -38,7 +38,7 @@ Paid AI creative tools have become [ridiculously expensive](https://medium.com/@
 
 - **Node-Based AI Workflow Editor** — Visual, modular pipelines for generative AI, similar in spirit to Krea Nodes and Weavy AI workflows but fully open-source (inspired by Blender Nodes and ComfyUI).
 - **Artistic Intelligence** — A design philosophy bridging human creativity and AI automation; the same creative-first approach seen in FloraFauna AI and Freepik Spaces.
-- **Generative Image & Video** — Integrated support for image and video generation powered by **MuAPI** (Vadoo AI).
+- **Provider-based AI backend** — Use OpenAI-compatible APIs or the built-in local fallback for workflow editing.
 - **Self-Hosted & Private** — Run entirely on your own infrastructure. No data sent to third-party SaaS platforms.
 - **Extensible Architecture** — Add new AI model nodes, connect external APIs, and build reusable workflow templates.
 - **No Vendor Lock-in** — Swap AI providers freely. Unlike Freepik Spaces or FloraFauna AI, you own your stack.
@@ -94,17 +94,28 @@ Or use **Docker** (see [Running with Docker](#running-with-docker)).
 
 ### Configuration
 
-Vibe Workflow uses **MuAPI** (Vadoo AI) for generative AI capabilities. You need an API key.
+Vibe Workflow now uses a server-side AI provider layer. Secrets belong only in server environment variables; do not store API keys in the browser or frontend code.
 
-1. **Get your API Key** from [muapi.ai](https://muapi.ai) — sign up, navigate to **API Keys**, generate a key.
+Provider selection order:
 
-2. **Configure the Backend**:
-   ```bash
-   cd server
-   cp .env.example .env
-   # Open .env and set:
-   # MU_API_KEY=your_actual_api_key_here
-   ```
+1. `AI_PROVIDER=openai-compatible`
+2. `OPENAI_BASE_URL` + `OPENAI_API_KEY`
+3. Local fallback
+
+OpenAI-compatible setup:
+
+```bash
+cd server
+cp .env.example .env
+
+# .env
+AI_PROVIDER=openai-compatible
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_API_KEY=your_api_key_here
+OPENAI_MODEL=gpt-4o-mini
+```
+
+`OPENAI_BASE_URL` may include or omit `/v1`; the backend normalizes it. Legacy vendor-specific provider modes are no longer supported, so use an OpenAI-compatible provider or local fallback.
 
 ### Running the Project
 
@@ -125,6 +136,14 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+OpenAI-compatible routes exposed by the backend:
+
+- `GET /v1/models`
+- `POST /v1/chat/completions`
+- `POST /v1/responses`
+
+Workflow routes remain under `/api/workflow/*`. Optional capabilities such as image, video, audio, pricing, and API nodes are gated by provider capabilities; unsupported nodes are hidden or return a clear error instead of exposing unusable controls.
+
 ---
 
 ## Running with Docker
@@ -142,9 +161,11 @@ The easiest way to run Vibe Workflow is with Docker Compose.
    ```bash
    cp .env.example .env
    ```
-   Edit `.env` and add your MuAPI key:
+   Edit `.env` and choose a provider:
    ```bash
-   MU_API_KEY=your_actual_api_key_here
+   AI_PROVIDER=openai-compatible
+   OPENAI_BASE_URL=https://api.openai.com/v1
+   OPENAI_API_KEY=your_api_key_here
    ```
 
 2. **Start all services**:

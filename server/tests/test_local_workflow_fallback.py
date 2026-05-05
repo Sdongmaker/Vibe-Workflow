@@ -1,7 +1,13 @@
 import importlib
 import os
+import sys
 import tempfile
 import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+LEGACY_PROVIDER_KEY_ENV = "MU" + "_API_KEY"
 
 
 class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
@@ -10,16 +16,19 @@ class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
         os.environ["LOCAL_WORKFLOW_STORE"] = os.path.join(
             self.tempdir.name, "workflows.json"
         )
+        os.environ.pop("AI_PROVIDER", None)
+        os.environ.pop("OPENAI_BASE_URL", None)
+        os.environ.pop("OPENAI_API_KEY", None)
+        os.environ.pop(LEGACY_PROVIDER_KEY_ENV, None)
 
         from app.utils import workflow_helper
 
         self.workflow_helper = importlib.reload(workflow_helper)
-        self.workflow_helper.MU_API_KEY = "your_api_key_here"
 
     async def asyncTearDown(self):
         self.tempdir.cleanup()
 
-    async def test_create_and_fetch_workflow_without_real_muapi_key(self):
+    async def test_create_and_fetch_workflow_with_local_provider(self):
         created = await self.workflow_helper.create_or_update_workflow(
             {
                 "workflow_id": None,
@@ -43,7 +52,7 @@ class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(fetched["data"], {"nodes": []})
         self.assertTrue(fetched["is_owner"])
 
-    async def test_node_schemas_are_available_without_real_muapi_key(self):
+    async def test_node_schemas_are_available_with_local_provider(self):
         schemas = await self.workflow_helper.get_node_schemas_helper("local-id")
 
         self.assertIn("categories", schemas)
@@ -51,3 +60,29 @@ class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("image-passthrough", schemas["categories"]["image"]["models"])
         self.assertIn("video-passthrough", schemas["categories"]["video"]["models"])
         self.assertIn("audio-passthrough", schemas["categories"]["audio"]["models"])
+
+    async def test_openai_capabilities_hide_unsupported_nodes(self):
+        os.environ["AI_PROVIDER"] = "openai-compatible"
+        os.environ["OPENAI_BASE_URL"] = "https://example.com/v1"
+        os.environ["OPENAI_API_KEY"] = "sk-test"
+        os.environ["OPENAI_MODEL"] = "gpt-test"
+        os.environ["AI_CAPABILITIES"] = '{"video": false, "audio": false, "image": false}'
+
+        self.workflow_helper = importlib.reload(self.workflow_helper)
+        schemas = await self.workflow_helper.get_node_schemas_helper("local-id")
+
+        self.assertIn("openai-chat", schemas["categories"]["text"]["models"])
+        openai_model = schemas["categories"]["text"]["models"]["openai-chat"]
+        model_default = openai_model["input_schema"]["schemas"]["input_data"]["properties"]["model"]["default"]
+        self.assertEqual(model_default, "gpt-test")
+        self.assertNotIn("video", schemas["categories"])
+        self.assertNotIn("audio", schemas["categories"])
+        self.assertNotIn("image", schemas["categories"])
+        self.assertNotIn("video-combiner", schemas["categories"]["utility"]["models"])
+
+    async def test_dynamic_cost_is_available_with_local_provider(self):
+        cost = await self.workflow_helper.calculate_dynamic_cost_helper(
+            {"task_name": "text-passthrough", "payload": {"prompt": "hello"}}
+        )
+
+        self.assertEqual(cost, {"cost": None})

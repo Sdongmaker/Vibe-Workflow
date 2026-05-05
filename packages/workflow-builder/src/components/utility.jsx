@@ -3,6 +3,9 @@ import { toast } from "react-hot-toast";
 import i18n from "../i18n";
 
 const tNode = (key, defaultValue) => i18n.t(key, { ns: "nodes", defaultValue });
+const SAMPLE_IMAGE_URL = "https://images.unsplash.com/photo-1633419461186-7d40a38105ec?q=80&w=1200&auto=format&fit=crop";
+const SAMPLE_VIDEO_URL = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+const SAMPLE_AUDIO_URL = "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3";
 
 const presetCopyDefaults = {
   presetImageInitialPrompt: "Ultra-detailed cinematic portrait of a futuristic AI engineer inside a holographic command center. Floating transparent UI panels, glowing blue and violet data streams, reflective surfaces, soft rim lighting, shallow depth of field, realistic skin texture, high-end sci-fi film aesthetic, 8K resolution, photorealistic, dramatic contrast, clean futuristic design.",
@@ -884,7 +887,7 @@ export const presets = [
     get title() { return tNode("presetImageGen", "Image Generator & Editor"); },
     get description() { return tNode("presetImageGenDesc", "Simple text to image Generation and Editing with Wan 2.5"); },
     icon: "image",
-    image: "https://cdn.muapi.ai/outputs/e53f9cb2caf947f790154dada58a426c.jpg",
+    image: SAMPLE_IMAGE_URL,
     nodes: [
       {
         id: "text1",
@@ -923,10 +926,10 @@ export const presets = [
           outputs: [
             {
               type: "image_url",
-              value: "https://cdn.muapi.ai/outputs/8c6c1863ae594cb99e82884f5d3de058.jpg"
+              value: SAMPLE_IMAGE_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/8c6c1863ae594cb99e82884f5d3de058.jpg"
+          resultUrl: SAMPLE_IMAGE_URL
         },
         type: "imageNode"
       },
@@ -962,7 +965,7 @@ export const presets = [
           formValues: {
             get prompt() { return presetCopy("presetImageEditPrompt"); },
             images_list: [
-              "https://cdn.muapi.ai/outputs/8c6c1863ae594cb99e82884f5d3de058.jpg"
+              SAMPLE_IMAGE_URL
             ],
             width: 2048,
             height: 2048,
@@ -970,10 +973,10 @@ export const presets = [
           outputs: [
             {
               type: "image_url",
-              value: "https://cdn.muapi.ai/outputs/e53f9cb2caf947f790154dada58a426c.jpg"
+              value: SAMPLE_IMAGE_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/e53f9cb2caf947f790154dada58a426c.jpg"
+          resultUrl: SAMPLE_IMAGE_URL
         },
         type: "imageNode"
       }
@@ -1010,7 +1013,7 @@ export const presets = [
     get title() { return tNode("presetVideoGen", "Video Generator"); },
     get description() { return tNode("presetVideoGenDesc", "Simple Video Generation with Seedance Lite"); },
     icon: "video",
-    image: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg",
+    image: SAMPLE_IMAGE_URL,
     nodes: [
       {
         id: "text1",
@@ -1049,10 +1052,10 @@ export const presets = [
           outputs: [
             {
               type: "image_url",
-              value: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg"
+              value: SAMPLE_IMAGE_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg"
+          resultUrl: SAMPLE_IMAGE_URL
         },
         type: "imageNode"
       },
@@ -1066,7 +1069,7 @@ export const presets = [
           },
           formValues: {
             get prompt() { return presetCopy("presetVideoMotionPrompt"); },
-            image_url: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg",
+            image_url: SAMPLE_IMAGE_URL,
             resolution: "720p",
             duration: 5,
             camera_fixed: false,
@@ -1074,10 +1077,10 @@ export const presets = [
           outputs: [
             {
               type: "video_url",
-              value: "https://cdn.muapi.ai/outputs/6e1f813951b24868ad117ddca0aaa8ea.mp4"
+              value: SAMPLE_VIDEO_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/6e1f813951b24868ad117ddca0aaa8ea.mp4"
+          resultUrl: SAMPLE_VIDEO_URL
         },
         type: "videoNode"
       }
@@ -1151,10 +1154,10 @@ export const presets = [
           outputs: [
             {
               type: "audio_url",
-              value: "https://cdn.muapi.ai/outputs/6a42f05895284e8687420843c749e11c.mp3"
+              value: SAMPLE_AUDIO_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/6a42f05895284e8687420843c749e11c.mp3"
+          resultUrl: SAMPLE_AUDIO_URL
         },
         type: "audioNode"
       }
@@ -1175,7 +1178,7 @@ export const presets = [
     get title() { return tNode("presetCaption", "LLM Image Captioning"); },
     get description() { return tNode("presetCaptionDesc", "Generate a prompt from an image with GPT-5"); },
     icon: "text",
-    image: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg",
+    image: SAMPLE_IMAGE_URL,
     nodes: [
       {
         id: "image1",
@@ -1186,15 +1189,15 @@ export const presets = [
             get name() { return tNode("inputImage", "Input Image"); }
           },
           formValues: {
-            image_url: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg"
+            image_url: SAMPLE_IMAGE_URL
           },
           outputs: [
             {
               type: "image_url",
-              value: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg"
+              value: SAMPLE_IMAGE_URL
             }
           ],
-          resultUrl: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg",
+          resultUrl: SAMPLE_IMAGE_URL,
         },
         type: "imageNode"
       },
@@ -1208,7 +1211,7 @@ export const presets = [
           },
           formValues: {
             get prompt() { return presetCopy("presetCaptionPrompt"); },
-            image_url: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg"
+            image_url: SAMPLE_IMAGE_URL
           },
           outputs: [
             {
