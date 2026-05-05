@@ -21,11 +21,13 @@ logger = logging.getLogger(__name__)
 DEFAULT_WORKFLOW_NAME = "未命名工作流"
 DEFAULT_WORKFLOW_CATEGORY = "通用"
 WORKFLOW_NOT_FOUND_DETAIL = "未找到工作流"
+RUN_NOT_FOUND_DETAIL = "未找到运行记录"
 INTERNAL_SERVER_ERROR_DETAIL = "服务器内部错误"
 REMOTE_REQUEST_FAILED_DETAIL = "远程请求失败"
 REQUEST_PROCESSING_FAILED_DETAIL = "请求处理失败，请稍后重试"
 REMOTE_DETAIL_TRANSLATIONS = {
     "workflow not found": WORKFLOW_NOT_FOUND_DETAIL,
+    "run not found": RUN_NOT_FOUND_DETAIL,
     "not found": "未找到请求的资源",
     "unauthorized": "认证失败，请检查 API Key",
     "forbidden": "无权访问该资源",
@@ -60,6 +62,7 @@ REMOTE_DETAIL_TRANSLATION_ORDER = [
     "too many requests",
     "rate limit",
     "workflow not found",
+    "run not found",
     "not editable",
     "not found",
     "workflow failed",
@@ -134,9 +137,9 @@ def remote_detail_text(detail) -> str:
     return str(detail)
 
 
-def localize_remote_detail(detail):
+def _translate_remote_detail(detail) -> str | None:
     if not detail:
-        return REMOTE_REQUEST_FAILED_DETAIL
+        return None
 
     if has_cjk_text(detail):
         return remote_detail_text(detail)
@@ -149,12 +152,41 @@ def localize_remote_detail(detail):
         if keyword in normalized:
             return REMOTE_DETAIL_TRANSLATIONS[keyword]
 
-    return REMOTE_REQUEST_FAILED_DETAIL
+    return None
+
+
+def localize_remote_detail(detail):
+    return _translate_remote_detail(detail) or REMOTE_REQUEST_FAILED_DETAIL
+
+
+def _exception_detail_text(exc: Exception) -> str:
+    for attr in ("detail", "message", "reason"):
+        value = getattr(exc, attr, None)
+        if value:
+            return remote_detail_text(value)
+
+    args = getattr(exc, "args", ())
+    if args:
+        return remote_detail_text(args[0])
+
+    return remote_detail_text(exc)
 
 
 def public_exception_detail(exc: Exception) -> str:
     logger.warning("User-facing request failed: %s", exc)
+    detail_text = _exception_detail_text(exc)
+    translated = _translate_remote_detail(detail_text)
+    if translated:
+        return translated
     return REQUEST_PROCESSING_FAILED_DETAIL
+
+
+def public_http_exception_detail(exc: HTTPException) -> str:
+    detail_text = _exception_detail_text(exc)
+    translated = _translate_remote_detail(detail_text)
+    if translated:
+        return translated
+    return detail_text if has_cjk_text(detail_text) else REMOTE_REQUEST_FAILED_DETAIL
 
 
 def local_workflow_response(workflow_id: str, workflow: dict) -> dict:
@@ -544,7 +576,7 @@ async def run_local_workflow(workflow_id: str) -> dict:
     store = read_local_workflows()
     workflow = store.get("workflows", {}).get(workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="Workflow not found")
+        raise HTTPException(status_code=404, detail=WORKFLOW_NOT_FOUND_DETAIL)
 
     run_id = f"run-{uuid.uuid4().hex}"
     nodes = workflow.get("data", {}).get("nodes", [])
@@ -568,7 +600,7 @@ async def run_local_node(workflow_id: str, node_id: str, payload: dict) -> dict:
     store = read_local_workflows()
     workflow = store.get("workflows", {}).get(workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="Workflow not found")
+        raise HTTPException(status_code=404, detail=WORKFLOW_NOT_FOUND_DETAIL)
 
     run_id = payload.get("run_id") or f"run-{uuid.uuid4().hex}"
     node = {
@@ -635,7 +667,7 @@ async def run_workflow_helper(workflow_id: str, payload: dict):
 async def get_run_status_helper(run_id: str):
     run = read_local_workflows().get("runs", {}).get(run_id)
     if not run:
-        raise HTTPException(status_code=404, detail="Run not found")
+        raise HTTPException(status_code=404, detail=RUN_NOT_FOUND_DETAIL)
     return {"run_id": run_id, "nodes": {k: [v] for k, v in run.get("nodes", {}).items()}}
 
 

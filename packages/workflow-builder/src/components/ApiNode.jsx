@@ -19,6 +19,43 @@ const outputHandles = [
   "apiOutput",
 ];
 
+const FIELD_LABEL_KEYS = {
+  image: "image",
+  images: "images",
+  image_url: "imageUrl",
+  image_urls: "imageUrls",
+  images_list: "images",
+  video: "video",
+  videos: "videos",
+  video_url: "videoUrl",
+  videos_list: "videos",
+  video_files: "videoFiles",
+  audio: "audio",
+  audios: "audios",
+  audio_url: "audioUrl",
+  audios_list: "audios",
+  audio_files: "audioFiles",
+  prompt: "prompt",
+  system_prompt: "system",
+  last_image: "lastFrame",
+  model_name: "modelName",
+  model_type: "modelType",
+  model_url: "modelUrl",
+  model_id: "modelId",
+  task_type: "taskType",
+  air_model_id: "airModelId",
+  api_key: "apiKey",
+  uid: "userId",
+  user_id: "userId",
+  category: "category",
+  subcategory: "subcategory",
+};
+
+const getFieldLabel = (t, key) => {
+  const labelKey = FIELD_LABEL_KEYS[key];
+  return labelKey ? t(labelKey, { defaultValue: key }) : key;
+};
+
 const ApiNode = ({ id, data, selected }) => {
   const [selectedModel, setSelectedModel] = useState(data.selectedModel || apiNodeModels[0]);
   const [connectedInputs, setConnectedInputs] = useState({});
@@ -471,7 +508,7 @@ const ApiNode = ({ id, data, selected }) => {
     const missingFields = requiredFields.filter(field => !formValues?.[field] || !formValues[field].trim());
 
     if (missingFields.length > 0) {
-      toast.error(t("requiredBeforeFetchingSchema", { fields: missingFields.join(", ") }));
+      toast.error(t("requiredBeforeFetchingSchema", { fields: missingFields.map((field) => getFieldLabel(t, field)).join(", ") }));
       return;
     }
 
@@ -862,7 +899,7 @@ const ApiNode = ({ id, data, selected }) => {
               }`}
                style={{ top: 150 + idx * 50, opacity: isExposed ? undefined : 0, pointerEvents: isExposed ? 'all' : 'none' }} 
             > 
-              {key} 
+              {getFieldLabel(t, key)}
             </p>
           </React.Fragment>
         );
