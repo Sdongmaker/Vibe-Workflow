@@ -1,6 +1,21 @@
 import React from "react";
 import { cookies } from "next/headers";
 import WorkflowListingClient from "./WorkflowListingClient";
+import enWorkflow from "../../i18n/locales/en/workflow.json";
+import zhWorkflow from "../../i18n/locales/zh/workflow.json";
+
+const workflowMetadataByLang = {
+  en: enWorkflow,
+  zh: zhWorkflow,
+};
+
+const getLocaleResources = (lang) => {
+  const normalizedLang = lang?.toLowerCase().startsWith("en") ? "en" : "zh";
+  return {
+    lang: normalizedLang,
+    resources: workflowMetadataByLang[normalizedLang],
+  };
+};
 
 async function getWorkflowDefs(cookieHeader) {
   const endpoint = `http://127.0.0.1:8000/api/workflow/get-workflow-defs`;
@@ -18,6 +33,16 @@ async function getWorkflowDefs(cookieHeader) {
     console.error("Error fetching workflows on server:", error);
     return [];
   }
+}
+
+export async function generateMetadata() {
+  const cookieStore = await cookies();
+  const { resources } = getLocaleResources(cookieStore.get("i18n_lang")?.value);
+
+  return {
+    title: resources.pageName,
+    description: resources.pageDescription,
+  };
 }
 
 const WorkflowList = async () => {

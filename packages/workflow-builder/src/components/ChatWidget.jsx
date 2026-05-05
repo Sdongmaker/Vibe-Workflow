@@ -152,9 +152,20 @@ const preprocessContent = (content) => {
   return processed;
 };
 
+const localeFromLanguage = (language) => (language?.startsWith("zh") ? "zh-CN" : "en-US");
+const CODE_LANGUAGE_ALIASES = {
+  js: "javascript",
+  ts: "typescript",
+  py: "python",
+  sh: "shell",
+  md: "markdown",
+};
+
 const CodeBlock = ({ language, value }) => {
   const [copied, setCopied] = useState(false);
   const { t } = useTranslation("chat");
+  const normalizedLanguage = CODE_LANGUAGE_ALIASES[language] || language;
+  const languageLabel = normalizedLanguage ? t(normalizedLanguage, { defaultValue: normalizedLanguage }) : t("code");
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
@@ -166,12 +177,14 @@ const CodeBlock = ({ language, value }) => {
     <div className="my-4 rounded-xl overflow-hidden border border-white/10 bg-black/60 shadow-2xl group/code">
       <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
         <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          {language || t("code")}
+          {languageLabel}
         </span>
         <button
           type="button"
           suppressHydrationWarning={true}
           onClick={handleCopy}
+          title={t("copyCode")}
+          aria-label={t("copyCode")}
           className="flex items-center gap-1.5 text-[10px] font-medium text-gray-400 hover:text-white transition-colors"
         >
           {copied ? (
@@ -199,7 +212,7 @@ const CodeBlock = ({ language, value }) => {
 const DEFAULT_SUGGESTION_KEYS = ["suggestion1", "suggestion2", "suggestion3", "suggestion4"];
 
 const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, onClearHistory }) => {
-  const { t } = useTranslation("chat");
+  const { t, i18n } = useTranslation("chat");
   const [inputValue, setInputValue] = useState("");
   const [loadingStep, setLoadingStep] = useState(0);
   const [copiedId, setCopiedId] = useState(null);
@@ -273,12 +286,12 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
 
     if (diffDays === 0) return t("today");
     if (diffDays === 1) return t("yesterday");
-    return date.toLocaleDateString([], { month: "short", day: "numeric" });
+    return date.toLocaleDateString(localeFromLanguage(i18n.language), { month: "short", day: "numeric" });
   };
 
   const formatMessageTime = (isoString) => {
     if (!isoString) return "";
-    return new Date(isoString).toLocaleTimeString([], {
+    return new Date(isoString).toLocaleTimeString(localeFromLanguage(i18n.language), {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -315,6 +328,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                 suppressHydrationWarning={true}
                 onClick={() => setIsWide(!isWide)}
                 title={isWide ? t("narrowView") : t("wideView")}
+                aria-label={isWide ? t("narrowView") : t("wideView")}
                 className="hidden md:flex p-2 text-gray-400 hover:text-blue-400 transition-colors rounded-full hover:bg-white/5"
               >
                 {isWide ? <FiMinimize2 size={18} /> : <FiMaximize2 size={18} />}
@@ -325,6 +339,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                   suppressHydrationWarning={true}
                   onClick={onClearHistory}
                   title={t("clearChatHistory")}
+                  aria-label={t("clearChatHistory")}
                   className="p-2 text-gray-400 hover:text-red-400 transition-colors rounded-full hover:bg-white/5"
                 >
                   <IoMdTrash size={20} />
@@ -334,6 +349,8 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                 type="button"
                 suppressHydrationWarning={true}
                 onClick={toggleChat}
+                title={t("closeAssistant")}
+                aria-label={t("closeAssistant")}
                 className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/5"
               >
                 <IoMdClose size={20} />
@@ -466,6 +483,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                           onClick={() => handleCopy(msg.content, idx)}
                           className="text-gray-400 hover:text-blue-500 transition-colors cursor-pointer"
                           title={t("copy")}
+                          aria-label={t("copyMessage")}
                         >
                           {copiedId === idx ? <IoMdCheckmark size={12} className="text-green-500" /> : <FaRegCopy size={12} />}
                         </button>
@@ -507,6 +525,7 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                   }
                 }}
                 placeholder={t("typeMessage")}
+                aria-label={t("messageInput")}
                 rows={1}
                 autoFocus
                 className="flex-1 bg-transparent outline-none text-sm text-gray-200 placeholder-gray-500 resize-none p-1 max-h-32 scrollbar-none border-none"
@@ -520,6 +539,8 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
                 type="submit"
                 suppressHydrationWarning={true}
                 disabled={!inputValue.trim()}
+                title={isLoading ? t("assistantResponding") : t("sendMessage")}
+                aria-label={isLoading ? t("assistantResponding") : t("sendMessage")}
                 className="p-2 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95 shrink-0"
               >
                 {isLoading ? <FaRegCirclePause size={18} /> : <IoMdSend size={16} />}
@@ -533,6 +554,8 @@ const ChatWidget = ({ isOpen, toggleChat, messages, onSendMessage, isLoading, on
           type="button"
           suppressHydrationWarning={true}
           onClick={toggleChat}
+          title={t("openAssistant")}
+          aria-label={t("openAssistant")}
           className={`group relative right-6 md:right-0 flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-110 transition-all duration-300 ${isLoading ? 'ring-2 ring-blue-200 ring-offset-2' : ''}`}
         >
           {isLoading ? (

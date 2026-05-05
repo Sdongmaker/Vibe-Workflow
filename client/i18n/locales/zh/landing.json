@@ -4,6 +4,8 @@
   "heroTitle2": "创意工作流。",
   "heroSubtitle": "一站式平台，帮助你设计、自动化并规模化创意流程，让想法到执行的衔接更顺畅。",
   "exploreWorkflows": "探索工作流",
+  "exploreWorkflowsAria": "浏览可用工作流",
   "watchDemo": "观看演示",
-  "trustedBy": "全球 10,000 多个创意团队信赖"
+  "trustedBy": "全球 10,000 多个创意团队信赖",
+  "trustedBrands": ["极光", "元像", "核心"]
 }

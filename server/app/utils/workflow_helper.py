@@ -18,6 +18,28 @@ LOCAL_STORE_PATH = Path(
     os.getenv("LOCAL_WORKFLOW_STORE", BASE_DIR / ".local_workflows.json")
 )
 PLACEHOLDER_API_KEYS = {"", "your_api_key_here", "your_actual_api_key_here"}
+DEFAULT_WORKFLOW_NAME = "未命名工作流"
+DEFAULT_WORKFLOW_CATEGORY = "通用"
+WORKFLOW_NOT_FOUND_DETAIL = "未找到工作流"
+MU_API_KEY_REQUIRED_DETAIL = "请先在 .env 中配置 MU_API_KEY，才能使用工作流服务"
+PROXY_METHOD_NOT_SUPPORTED_DETAIL = "代理不支持该请求方法"
+REMOTE_SERVER_ERROR_DETAIL = "连接远程服务失败"
+INTERNAL_SERVER_ERROR_DETAIL = "服务器内部错误"
+UNKNOWN_REMOTE_ERROR_DETAIL = "远程服务返回未知错误"
+REMOTE_REQUEST_FAILED_DETAIL = "远程请求失败"
+REQUEST_PROCESSING_FAILED_DETAIL = "请求处理失败，请稍后重试"
+REMOTE_DETAIL_TRANSLATIONS = {
+    "workflow not found": WORKFLOW_NOT_FOUND_DETAIL,
+    "not found": "未找到请求的资源",
+    "unauthorized": "认证失败，请检查 API Key",
+    "forbidden": "无权访问该资源",
+    "invalid api key": "API Key 无效，请检查配置",
+    "missing api key": MU_API_KEY_REQUIRED_DETAIL,
+    "rate limit exceeded": "请求过于频繁，请稍后重试",
+    "too many requests": "请求过于频繁，请稍后重试",
+    "internal server error": INTERNAL_SERVER_ERROR_DETAIL,
+    "something went wrong": REMOTE_REQUEST_FAILED_DETAIL,
+}
 
 
 def use_local_workflow_store() -> bool:
@@ -44,6 +66,30 @@ def write_local_workflows(store: dict) -> None:
     LOCAL_STORE_PATH.write_text(json.dumps(store, indent=2))
 
 
+def has_cjk_text(value) -> bool:
+    return any("\u4e00" <= char <= "\u9fff" for char in str(value))
+
+
+def localize_remote_detail(detail):
+    if not detail:
+        return REMOTE_REQUEST_FAILED_DETAIL
+
+    if has_cjk_text(detail):
+        return detail
+
+    if isinstance(detail, str):
+        normalized = detail.strip().lower()
+        if normalized in REMOTE_DETAIL_TRANSLATIONS:
+            return REMOTE_DETAIL_TRANSLATIONS[normalized]
+
+    return REMOTE_REQUEST_FAILED_DETAIL
+
+
+def public_exception_detail(exc: Exception) -> str:
+    logger.warning("User-facing request failed: %s", exc)
+    return REQUEST_PROCESSING_FAILED_DETAIL
+
+
 def local_workflow_response(workflow_id: str, workflow: dict) -> dict:
     return {
         **workflow,
@@ -62,9 +108,9 @@ def local_workflow_list_item(workflow_id: str, workflow: dict) -> dict:
     return {
         "id": workflow_id,
         "workflow_id": workflow_id,
-        "name": workflow.get("name", "Untitled Workflow"),
+        "name": workflow.get("name", DEFAULT_WORKFLOW_NAME),
         "thumbnail": workflow.get("thumbnail"),
-        "category": workflow.get("category", "General"),
+        "category": workflow.get("category", DEFAULT_WORKFLOW_CATEGORY),
         "created_at": workflow.get("created_at"),
         "updated_at": workflow.get("updated_at"),
     }
@@ -92,9 +138,9 @@ def local_passthrough_schemas() -> dict:
     text_prompt = {
         "prompt": {
             "type": "string",
-            "title": "Prompt",
+            "title": "提示词",
             "name": "prompt",
-            "description": "Text input for the workflow.",
+            "description": "工作流的文本输入。",
             "default": "",
         }
     }
@@ -109,20 +155,20 @@ def local_passthrough_schemas() -> dict:
             "text": {
                 "models": {
                     "text-passthrough": local_schema_model(
-                        "Input Text", text_prompt, ["prompt"]
+                        "输入文本", text_prompt, ["prompt"]
                     )
                 }
             },
             "image": {
                 "models": {
                     "image-passthrough": local_schema_model(
-                        "Input Image",
+                        "输入图片",
                         {
                             "image_url": {
                                 **url_field,
-                                "title": "Image URL",
+                                "title": "图片 URL",
                                 "name": "image_url",
-                                "description": "URL of the input image.",
+                                "description": "输入图片的 URL。",
                             }
                         },
                         ["image_url"],
@@ -132,13 +178,13 @@ def local_passthrough_schemas() -> dict:
             "video": {
                 "models": {
                     "video-passthrough": local_schema_model(
-                        "Input Video",
+                        "输入视频",
                         {
                             "video_url": {
                                 **url_field,
-                                "title": "Video URL",
+                                "title": "视频 URL",
                                 "name": "video_url",
-                                "description": "URL of the input video.",
+                                "description": "输入视频的 URL。",
                             }
                         },
                         ["video_url"],
@@ -148,13 +194,13 @@ def local_passthrough_schemas() -> dict:
             "audio": {
                 "models": {
                     "audio-passthrough": local_schema_model(
-                        "Input Audio",
+                        "输入音频",
                         {
                             "audio_url": {
                                 **url_field,
-                                "title": "Audio URL",
+                                "title": "音频 URL",
                                 "name": "audio_url",
-                                "description": "URL of the input audio.",
+                                "description": "输入音频的 URL。",
                             }
                         },
                         ["audio_url"],
@@ -164,20 +210,20 @@ def local_passthrough_schemas() -> dict:
             "utility": {
                 "models": {
                     "prompt-concatenator": local_schema_model(
-                        "Prompt Concatenator", text_prompt, ["prompt"]
+                        "提示词拼接器", text_prompt, ["prompt"]
                     ),
                     "video-combiner": local_schema_model(
-                        "Video Combiner",
+                        "视频合并器",
                         {
                             "videos_list": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "title": "Video Clips",
+                                "title": "视频片段",
                                 "name": "videos_list",
                             },
                             "aspect_ratio": {
                                 "type": "string",
-                                "title": "Aspect Ratio",
+                                "title": "宽高比",
                                 "name": "aspect_ratio",
                                 "default": "auto",
                             },
@@ -202,10 +248,10 @@ async def create_or_update_local_workflow(payload: dict):
     workflows[workflow_id] = {
         **existing,
         "workflow_id": workflow_id,
-        "name": payload.get("name") or existing.get("name") or "Untitled Workflow",
+        "name": payload.get("name") or existing.get("name") or DEFAULT_WORKFLOW_NAME,
         "edges": payload.get("edges", existing.get("edges", [])),
         "data": payload.get("data", existing.get("data", {"nodes": []})),
-        "category": payload.get("category", existing.get("category", "General")),
+        "category": payload.get("category", existing.get("category", DEFAULT_WORKFLOW_CATEGORY)),
         "thumbnail": existing.get("thumbnail"),
         "created_at": existing.get("created_at", now),
         "updated_at": now,
@@ -236,14 +282,14 @@ async def get_local_workflow_defs():
 async def get_local_workflow_def(workflow_id: str):
     workflow = read_local_workflows().get("workflows", {}).get(workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="Workflow not found")
+        raise HTTPException(status_code=404, detail=WORKFLOW_NOT_FOUND_DETAIL)
     return local_workflow_response(workflow_id, workflow)
 
 
 async def delete_local_workflow_def(workflow_id: str):
     store = read_local_workflows()
     if workflow_id not in store.get("workflows", {}):
-        raise HTTPException(status_code=404, detail="Workflow not found")
+        raise HTTPException(status_code=404, detail=WORKFLOW_NOT_FOUND_DETAIL)
     del store["workflows"][workflow_id]
     write_local_workflows(store)
     return {"status": "deleted"}
@@ -253,8 +299,8 @@ async def update_local_workflow_name(workflow_id: str, payload: dict):
     store = read_local_workflows()
     workflow = store.get("workflows", {}).get(workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="Workflow not found")
-    workflow["name"] = payload.get("name") or workflow.get("name", "Untitled Workflow")
+        raise HTTPException(status_code=404, detail=WORKFLOW_NOT_FOUND_DETAIL)
+    workflow["name"] = payload.get("name") or workflow.get("name", DEFAULT_WORKFLOW_NAME)
     workflow["updated_at"] = utc_now()
     write_local_workflows(store)
     return {"status": "updated"}
@@ -264,8 +310,8 @@ async def update_local_workflow_category(workflow_id: str, payload: dict):
     store = read_local_workflows()
     workflow = store.get("workflows", {}).get(workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="Workflow not found")
-    workflow["category"] = payload.get("category") or "General"
+        raise HTTPException(status_code=404, detail=WORKFLOW_NOT_FOUND_DETAIL)
+    workflow["category"] = payload.get("category") or DEFAULT_WORKFLOW_CATEGORY
     workflow["updated_at"] = utc_now()
     write_local_workflows(store)
     return {"status": "updated"}
@@ -273,7 +319,7 @@ async def update_local_workflow_category(workflow_id: str, payload: dict):
 async def get_api_key():
     api_key = MU_API_KEY
     if not api_key or api_key.strip() in PLACEHOLDER_API_KEYS:
-        raise HTTPException(status_code=400, detail="Setup MU_API_KEY in .env to be able to use Workflow")
+        raise HTTPException(status_code=400, detail=MU_API_KEY_REQUIRED_DETAIL)
     return api_key
 
 async def proxy_request_helper(method: str, url: str, payload: Optional[dict] = None):
@@ -292,14 +338,14 @@ async def proxy_request_helper(method: str, url: str, payload: Optional[dict] = 
             elif method.upper() == "DELETE":
                 response = await client.delete(url, headers=headers, timeout=60.0)
             else:
-                raise HTTPException(status_code=405, detail=f"Method {method} not supported in proxy")
+                raise HTTPException(status_code=405, detail=PROXY_METHOD_NOT_SUPPORTED_DETAIL)
 
         except httpx.RequestError as e:
             logger.error(f"HTTPExt Request Error for {method} {url}: {e}")
-            raise HTTPException(status_code=500, detail=f"Error contacting remote server: {str(e)}")
+            raise HTTPException(status_code=500, detail=REMOTE_SERVER_ERROR_DETAIL)
         except Exception as e:
             logger.error(f"Unexpected error in proxy_request_helper for {method} {url}: {e}")
-            raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+            raise HTTPException(status_code=500, detail=INTERNAL_SERVER_ERROR_DETAIL)
 
     try:
         if response.content:
@@ -307,14 +353,17 @@ async def proxy_request_helper(method: str, url: str, payload: Optional[dict] = 
         else:
             resp_json = {}
     except ValueError:
-        resp_json = {"detail": response.text or "Unknown error from remote server"}
+        resp_json = {"detail": response.text or UNKNOWN_REMOTE_ERROR_DETAIL}
 
     if response.status_code == 200:
         return resp_json
     else:
-        error_detail = resp_json.get("detail", "Something went wrong")
+        error_detail = resp_json.get("detail", REMOTE_REQUEST_FAILED_DETAIL)
         logger.warning(f"Remote server returned {response.status_code}: {error_detail}")
-        raise HTTPException(status_code=response.status_code, detail=error_detail)
+        raise HTTPException(
+            status_code=response.status_code,
+            detail=localize_remote_detail(error_detail),
+        )
 
 async def create_or_update_workflow(payload: dict):
     if use_local_workflow_store():
@@ -391,6 +440,12 @@ async def get_file_upload_url_helper(params: dict):
     query_string = urllib.parse.urlencode(params)
     url = f"https://api.muapi.ai/app/get_file_upload_url?{query_string}"
     return await proxy_request_helper("GET", url)
+
+async def calculate_dynamic_cost_helper(payload: dict):
+    if use_local_workflow_store():
+        return {"cost": 0}
+    url = "https://api.muapi.ai/app/calculate_dynamic_cost"
+    return await proxy_request_helper("POST", url, payload)
 
 async def get_workflow_last_run(workflow_id: str):
     url = f"https://api.muapi.ai/workflow/get-workflow-last-run/{workflow_id}"

@@ -3,31 +3,30 @@ import { toast } from "react-hot-toast";
 import i18n from "../i18n";
 
 const tNode = (key, defaultValue) => i18n.t(key, { ns: "nodes", defaultValue });
-
 const presetCopyDefaults = {
-  presetImageInitialPrompt: "Ultra-detailed cinematic portrait of a futuristic AI engineer inside a holographic command center. Floating transparent UI panels, glowing blue and violet data streams, reflective surfaces, soft rim lighting, shallow depth of field, realistic skin texture, high-end sci-fi film aesthetic, 8K resolution, photorealistic, dramatic contrast, clean futuristic design.",
-  presetImageEditPrompt: "Enhance the lighting to be more cinematic with stronger rim light and subtle volumetric fog. Increase contrast and depth, add more glowing holographic elements around the subject, slightly darken the background for focus, improve facial realism and sharpness, maintain photorealistic style and premium sci-fi mood.",
-  presetVideoMotionPrompt: "Animate the scene with slow cinematic camera movement, subtle parallax, and smooth forward motion. Holographic elements gently pulse and shift, light rays move naturally through fog, floating structures subtly rotate, ultra-smooth transitions, realistic motion blur, film-grade animation, cinematic pacing, premium tech showcase style.",
-  presetVideoImagePrompt: "Wide cinematic shot of a glowing futuristic city built from floating geometric shapes and holographic panels. Neon blue and purple lights, soft volumetric fog, reflective surfaces, dramatic sky, ultra-realistic lighting, depth of field, 8K detail, sci-fi cinematic style, symmetrical composition.",
-  presetAudioPrompt: "Generate a cinematic ambient soundscape with deep atmospheric pads, soft evolving synth textures, subtle low-frequency pulses, and gentle high-end shimmer. The mood should feel futuristic, calm, and inspirational, suitable for a high-end AI product or cinematic workflow reveal. Clean mix, professional sound design, smooth transitions, no abrupt sounds.",
-  presetCaptionPrompt: "Provide a detailed prompt of this image, capturing as many elements as possible. Include specifics about the colors, textures, any people or objects present, and the setting. Describe the atmosphere, any notable features or interactions, and the overall mood of the scene.",
-  presetCaptionExampleOutput: "A cinematic sci‑fi cityscape at golden hour. A lone explorer stands on the edge of a jagged cliff, gazing out over a vast megacity that rises above a sea of low-lying clouds. The foreground cliff is dark, rough rock with cracks and tufts of green grass and small wildflowers along the edge. The explorer wears a rugged, modern space/terrain suit with a backpack and gear; their silhouette is a quiet, contemplative figure framed against the glowing city. The city below and around is a dense forest of skyscrapers of varying shapes and heights, all made of glass and metal. Neon accents run along many surfaces: turquoise and teal vertical lines glow along several towers, red and magenta edge lights highlight upper contours, and cyan geometric strips trace architectural grooves. The central cluster features a pair of towering, illuminated monoliths with bright cyan highlights and antennae that reach into the sky. Other buildings have curved, multi-tiered silhouettes and reflective façades that catch the sunset and neon alike. A veil of mist and fog hangs around the lower levels, softening edges and lending a dreamlike scale to the city.\n\nIn the sky, several sleek flying vehicles streak by, leaving luminous trails—white and pale yellow from some, magenta and purple from others—adding dynamic motion and depth. The trails glow against a sky that shifts from warm sunset golds and oranges near the horizon to cool deep blues higher up, with scattered, sunlit clouds that glow with a honeyed, amber tint. The sun is low on the left, casting long, warm rays across the cliff and creating a gentle rim light on the explorer, while the city glows with cooler neon against the fading daylight. The overall atmosphere is awe-inspiring, adventurous, and slightly otherworldly—a moment of solitary exploration at the edge of a technologically advanced but fragile-looking metropolis. \n\nSuggested prompt (condensed for reuse):\nHyperreal cinematic sci‑fi city at golden hour. A lone explorer in a rugged space/terrain suit stands on the edge of a jagged cliff, overlooking a megacity rising from a sea of clouds. Tall glass towers with teal/cyan neon lines and red/magenta edge lights dominate the skyline; central twin towers glow with cyan accents. A warm sunset gradient—gold, orange, pink—meets cool neon reflections on glass. Flying vehicles streak across the sky, leaving white, yellow, and magenta light trails. Foreground cliff is rough rock with sparse grasses; mist swirls around the lower city, hiding the bases. The mood is awe-inspiring, adventurous, and otherworldly, with a sense of solitary discovery. Ultra-detailed, 8k, cinematic concept art, 16:9, high dynamic range, volumetric fog, soft lens flare from the sun.",
+  presetImageInitialPrompt: "一位未来 AI 工程师置身全息指挥中心的超精细电影感肖像。漂浮的透明 UI 面板、发光的蓝紫色数据流、反光表面、柔和轮廓光、浅景深、真实肤质、高级科幻电影质感、8K 分辨率、照片级真实感、强烈戏剧对比、干净的未来主义设计。",
+  presetImageEditPrompt: "增强光照，让画面更具电影感，加入更强的轮廓光和细腻的体积雾。提升对比度和空间层次，在主体周围添加发光全息元素，略微压暗背景以突出焦点，强化面部真实感和清晰度，并保持照片级真实的高级科幻氛围。",
+  presetVideoMotionPrompt: "为场景加入缓慢的电影感镜头运动、细微视差和顺滑前移动作。全息元素应轻柔脉动和位移，光束在雾气中自然流动，漂浮结构轻微旋转，整体运动保持超顺滑、电影级和高级质感。",
+  presetVideoImagePrompt: "由漂浮几何形体和全息面板构成的发光未来城市宽幅电影镜头。霓虹蓝紫灯光、柔和体积雾、反光表面、戏剧化天空、超真实光照、景深、8K 细节、科幻电影风格、对称构图。",
+  presetAudioPrompt: "生成一段电影感环境音景，包含深沉的大气铺底、柔和演进的合成器纹理、细微低频脉冲和轻柔的高频闪光感。氛围应未来、平静且有启发感，适合高端 AI 产品或电影感工作流展示。混音干净、专业声音设计、过渡顺滑，避免突兀声音。",
+  presetCaptionPrompt: "请为这张图片生成详细提示词，尽可能捕捉其中的元素。包括颜色、材质、出现的人物或物体以及场景。描述氛围、显著特征或互动，以及画面的整体情绪。",
+  presetCaptionExampleOutput: "一幅黄金时刻的电影感科幻城市景观。一名孤独的探索者站在崎岖悬崖边缘，凝望着低云海之上延展的巨大未来城市。前景悬崖是深色粗粝岩石，岩缝与边缘点缀着草丛和小野花。探索者穿着粗犷的现代太空服，背着背包和装备；他的剪影安静而沉思，被远处发光的城市衬托出来。下方城市由密集的玻璃和金属摩天楼构成。许多建筑表面布满霓虹装饰：青绿和蓝绿色竖线沿塔楼发光，红色和洋红色边缘光勾勒顶部轮廓，青色几何条带描绘建筑纹路。中央建筑群有一对明亮青色高光的双子巨塔，天线直指天空。其他建筑拥有弧形、多层轮廓和反光立面，同时映照夕阳与霓虹。薄雾笼罩低层区域，柔化边缘，赋予城市梦幻般的尺度感。\n\n天空中，几架流线型飞行器划过，留下明亮尾迹，有些是白色和浅黄色，有些是洋红和紫色，为画面增加动感和深度。天空色彩从地平线附近温暖的夕阳金橙色，渐变到高处的冷调深蓝色，零散云层被阳光染成琥珀色。太阳位于左侧低空，长长的暖光扫过悬崖，并在探索者身上形成柔和轮廓光；与此同时，城市以更冷的霓虹光在暮色中发亮。整体氛围令人敬畏、充满冒险感并带有轻微异世界气质，呈现出一个人在先进而脆弱的科技大都会边缘独自探索的瞬间。",
 };
-
-const presetCopy = (key) => tNode(key, presetCopyDefaults[key]);
+const presetCopy = (key) => tNode(key, presetCopyDefaults[key] || key);
 
 export const imageModels = [
   {
     id: "image-passthrough",
-    get name() { return tNode("inputImage", "Input Image"); },
+    displayNameKey: "inputImage",
+    get name() { return tNode("inputImage", "输入图片"); },
     input_params: {
       properties: {
         "image_url": {
           "examples": [],
-          get description() { return tNode("imageUrlDesc", "URL of the input image."); },
+          get description() { return tNode("imageUrlDesc", "输入图片的 URL。"); },
           "field": "image",
           "type": "string",
-          get title() { return tNode("imageUrl", "Image URL"); },
+          get title() { return tNode("imageUrl", "图片 URL"); },
           "name": "image_url"
         },
       },
@@ -244,15 +243,16 @@ export const imageModels = [
 export const videoModels = [
   {
     id: "video-passthrough",
-    get name() { return tNode("inputVideo", "Input Video"); },
+    displayNameKey: "inputVideo",
+    get name() { return tNode("inputVideo", "输入视频"); },
     input_params: {
       properties: {
         "video_url": {
           "examples": [],
-          get description() { return tNode("videoUrlDesc", "URL of the input video."); },
+          get description() { return tNode("videoUrlDesc", "输入视频的 URL。"); },
           "field": "video",
           "type": "string",
-          get title() { return tNode("videoUrl", "Video URL"); },
+          get title() { return tNode("videoUrl", "视频 URL"); },
           "name": "video_url"
         },
       },
@@ -558,7 +558,8 @@ export const videoModels = [
   },
   {
     id: "video-combiner",
-    name: "Video Combiner",
+    displayNameKey: "videoCombiner",
+    get name() { return tNode("videoCombiner", "视频合并器"); },
     input_params: {}
   }
 ];
@@ -566,16 +567,17 @@ export const videoModels = [
 export const textModels = [
   {
     id: "text-passthrough",
-    get name() { return tNode("inputText", "Input Text"); },
+    displayNameKey: "inputText",
+    get name() { return tNode("inputText", "输入文本"); },
     input_params: {
       properties: {
         "prompt": {
           "examples": [
             ""
           ],
-          get description() { return tNode("promptDesc", "Text prompt describing the image."); },
+          get description() { return tNode("promptDesc", "用于描述图片的文本提示词。"); },
           "type": "string",
-          get title() { return tNode("prompt", "Prompt"); },
+          get title() { return tNode("prompt", "提示词"); },
           "name": "prompt"
         }
       },
@@ -584,21 +586,25 @@ export const textModels = [
   },
   {
     id: "any-llm",
+    displayNameKey: "anyLlm",
     name: "Any Llm",
     input_params: {}
   },
   {
     id: "openrouter-vision",
+    displayNameKey: "openrouterVision",
     name: "Openrouter Vision",
     input_params: {}
   },
   {
     id: "gpt-5-nano",
+    displayNameKey: "gpt5Nano",
     name: "GPT5 Nano",
     input_params: {}
   },
   {
     id: "gpt-5-mini",
+    displayNameKey: "gpt5Mini",
     name: "GPT5 Mini",
     input_params: {}
   }
@@ -607,15 +613,16 @@ export const textModels = [
 export const audioModels = [
   {
     id: "audio-passthrough",
-    get name() { return tNode("inputAudio", "Input Audio"); },
+    displayNameKey: "inputAudio",
+    get name() { return tNode("inputAudio", "输入音频"); },
     input_params: {
       properties: {
         "audio_url": {
           "examples": [],
-          get description() { return tNode("audioUrlDesc", "URL of the input audio."); },
+          get description() { return tNode("audioUrlDesc", "输入音频的 URL。"); },
           "field": "audio",
           "type": "string",
-          get title() { return tNode("audioUrl", "Audio URL"); },
+          get title() { return tNode("audioUrl", "音频 URL"); },
           "name": "audio_url"
         },
       },
@@ -657,16 +664,17 @@ export const audioModels = [
 export const concatModels = [
   {
     id: "prompt-concatenator",
-    get name() { return tNode("promptConcatenator", "Prompt Concatenator"); },
+    displayNameKey: "promptConcatenator",
+    get name() { return tNode("promptConcatenator", "提示词拼接器"); },
     input_params: {
       properties: {
         "prompt": {
           "examples": [
             ""
           ],
-          get description() { return tNode("promptDesc", "Text prompt describing the image."); },
+          get description() { return tNode("promptDesc", "用于描述图片的文本提示词。"); },
           "type": "string",
-          get title() { return tNode("prompt", "Prompt"); },
+          get title() { return tNode("prompt", "提示词"); },
           "name": "prompt"
         }
       },
@@ -678,20 +686,21 @@ export const concatModels = [
 export const videoCombinerModels = [
   {
     id: "video-combiner",
-    get name() { return tNode("videoCombiner", "Video Combiner"); },
+    displayNameKey: "videoCombiner",
+    get name() { return tNode("videoCombiner", "视频合并器"); },
     input_params: {
       properties: {
         "videos_list": {
           "examples": [
             "https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/seedance-v2.0-i2v.mp4"
           ],
-          get description() { return tNode("videoClipsDesc", "Upload the video clips you want to combine, in order. Each clip can be 5–60 seconds."); },
+          get description() { return tNode("videoClipsDesc", "按顺序上传要合并的视频片段。每个片段可长达 5 到 60 秒。"); },
           "field": "videos_list",
           "type": "array",
           "items": {
             "type": "string"
           },
-          get title() { return tNode("videoClips", "Video Clips"); },
+          get title() { return tNode("videoClips", "视频片段"); },
           "name": "videos_list",
           "maxItems": 20
         },
@@ -706,11 +715,11 @@ export const videoCombinerModels = [
             "21:9",
             "9:21"
           ],
-          get title() { return tNode("aspectRatio", "Aspect Ratio"); },
+          get title() { return tNode("aspectRatio", "宽高比"); },
           "name": "aspect_ratio",
           "type": "string",
           "default": "auto",
-          get description() { return tNode("aspectRatioDesc", "Output aspect ratio. 'auto' uses the aspect ratio of the first uploaded clip."); }
+          get description() { return tNode("aspectRatioDesc", "输出宽高比。`auto` 会使用第一个上传片段的宽高比。"); }
         }
       },
       required: ["videos_list"],
@@ -721,19 +730,20 @@ export const videoCombinerModels = [
 export const apiNodeModels = [
   {
     id: "wavespeed",
-    name: "Wavespeed API",
+    displayNameKey: "wavespeedApi",
+    get name() { return tNode("wavespeedApi", "Wavespeed API"); },
     input_params: {
       properties: {
         "model_url": {
           "default": "",
-          "description": "https://wavespeed.ai/models/wavespeed-ai/flux-schnell",
+          get description() { return tNode("wavespeedModelUrlDesc", "Wavespeed 模型 URL，例如 https://wavespeed.ai/models/wavespeed-ai/flux-schnell"); },
           "type": "string",
           "format": "text",
           "required": true
         },
         "api_key": {
           "examples": "",
-          get description() { return tNode("wavespeedApiKeyDesc", "API Key of the wavespeed ai."); },
+          get description() { return tNode("wavespeedApiKeyDesc", "Wavespeed AI 的 API 密钥。"); },
           "type": "string",
           "format": "text",
           "required": true
@@ -744,12 +754,13 @@ export const apiNodeModels = [
   },
   {
     id: "straico",
-    name: "Straico API",
+    displayNameKey: "straicoApi",
+    get name() { return tNode("straicoApi", "Straico API"); },
     input_params: {
       properties: {
         "model_name": {
           "enum": [],
-          get description() { return tNode("straicoModelNameDesc", "Name of the model (e.g. sd-xl)"); },
+          get description() { return tNode("straicoModelNameDesc", "模型名称（例如 sd-xl）"); },
           "type": "string",
           "default": "",
           "required": true
@@ -757,13 +768,13 @@ export const apiNodeModels = [
         "model_type": {
           "enum": ["chat", "image", "video", "audio"],
           "default": "chat",
-          get description() { return tNode("straicoModelTypeDesc", "Type of the model (e.g. chat, image, video, audio)"); },
+          get description() { return tNode("straicoModelTypeDesc", "模型类型（例如 chat、image、video、audio）"); },
           "type": "string",
           "required": true
         },
         "api_key": {
           "examples": "",
-          get description() { return tNode("straicoApiKeyDesc", "API Key for Straico."); },
+          get description() { return tNode("straicoApiKeyDesc", "Straico 的 API 密钥。"); },
           "type": "string",
           "format": "text",
           "required": true
@@ -774,25 +785,26 @@ export const apiNodeModels = [
   },
   {
     id: "runware",
-    name: "Runware API",
+    displayNameKey: "runwareApi",
+    get name() { return tNode("runwareApi", "Runware API"); },
     input_params: {
       properties: {
         "api_key": {
-          get description() { return tNode("runwareApiKeyDesc", "Runware API Key"); },
+          get description() { return tNode("runwareApiKeyDesc", "Runware API 密钥"); },
           "type": "string",
           "format": "text",
           "required": true
         },
         "task_type": {
           "enum": ["imageInference", "textToVideo", "imageToVideo", "upscale", "removeBackground"],
-          get description() { return tNode("runwareTaskTypeDesc", "Task type (e.g. imageInference, textToVideo, imageToVideo, upscale)"); },
+          get description() { return tNode("runwareTaskTypeDesc", "任务类型（例如 imageInference、textToVideo、imageToVideo、upscale）"); },
           "type": "string",
           "default": "imageInference",
           "required": true
         },
         "model_name": {
           "enum": [],
-          get description() { return tNode("runwareAirModelIdDesc", "AIR identifier of the model"); },
+          get description() { return tNode("runwareAirModelIdDesc", "模型的 AIR 标识符"); },
           "type": "string",
           "default": "",
           "required": false
@@ -803,29 +815,30 @@ export const apiNodeModels = [
   },
   {
     id: "genvr",
-    name: "GenVR API",
+    displayNameKey: "genvrApi",
+    get name() { return tNode("genvrApi", "GenVR API"); },
     input_params: {
       properties: {
         "uid": {
-          get description() { return tNode("genvrUserIdDesc", "Your GenVR User ID"); },
+          get description() { return tNode("genvrUserIdDesc", "你的 GenVR 用户 ID"); },
           "type": "string",
           "format": "text",
           "required": true
         },
         "api_key": {
-          get description() { return tNode("genvrApiKeyDesc", "GenVR API Key"); },
+          get description() { return tNode("genvrApiKeyDesc", "GenVR API 密钥"); },
           "type": "string",
           "format": "text",
           "required": true
         },
         "category": {
-          get description() { return tNode("genvrModelCategoryDesc", "Model category (e.g. imagegen)"); },
+          get description() { return tNode("genvrModelCategoryDesc", "模型分类（例如 imagegen）"); },
           "type": "string",
           "format": "text",
           "required": true
         },
         "subcategory": {
-          get description() { return tNode("genvrModelIdentifierDesc", "Model identifier (e.g. flux_dev)"); },
+          get description() { return tNode("genvrModelIdentifierDesc", "模型标识符（例如 flux_dev）"); },
           "type": "string",
           "format": "text",
           "required": true
@@ -872,8 +885,8 @@ export const downloadFile = async (file_url, filename = "download") => {
 export const presets = [
   {
     id: "empty-workflow",
-    get title() { return tNode("presetEmpty", "Empty Workflow"); },
-    description: "",
+    get title() { return tNode("presetEmpty", "空工作流"); },
+    get description() { return tNode("presetEmptyDesc", "从空白画布开始"); },
     icon: "plus",
     image: "",
     nodes: [],
@@ -881,8 +894,8 @@ export const presets = [
   },
   {
     id: "image-generator",
-    get title() { return tNode("presetImageGen", "Image Generator & Editor"); },
-    get description() { return tNode("presetImageGenDesc", "Simple text to image Generation and Editing with Wan 2.5"); },
+    get title() { return tNode("presetImageGen", "图片生成与编辑"); },
+    get description() { return tNode("presetImageGenDesc", "使用 Wan 2.5 生成和编辑图片"); },
     icon: "image",
     image: "https://cdn.muapi.ai/outputs/e53f9cb2caf947f790154dada58a426c.jpg",
     nodes: [
@@ -892,7 +905,7 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            get name() { return tNode("inputText", "Input Text"); }
+            get name() { return tNode("inputText", "输入文本"); }
           },
           formValues: {
             get prompt() { return presetCopy("presetImageInitialPrompt"); }
@@ -936,7 +949,7 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            get name() { return tNode("inputText", "Input Text"); }
+            get name() { return tNode("inputText", "输入文本"); }
           },
           formValues: {
             get prompt() { return presetCopy("presetImageEditPrompt"); }
@@ -1007,8 +1020,8 @@ export const presets = [
   },
   {
     id: "video-generator",
-    get title() { return tNode("presetVideoGen", "Video Generator"); },
-    get description() { return tNode("presetVideoGenDesc", "Simple Video Generation with Seedance Lite"); },
+    get title() { return tNode("presetVideoGen", "视频生成器"); },
+    get description() { return tNode("presetVideoGenDesc", "使用 Seedance Lite 进行简单的视频生成"); },
     icon: "video",
     image: "https://cdn.muapi.ai/outputs/836c0912239f4f11a2ca333e26387152.jpg",
     nodes: [
@@ -1018,7 +1031,7 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            get name() { return tNode("inputText", "Input Text"); }
+            get name() { return tNode("inputText", "输入文本"); }
           },
           formValues: {
             get prompt() { return presetCopy("presetVideoMotionPrompt"); }
@@ -1103,8 +1116,8 @@ export const presets = [
   },
   {
     id: "audio-generator",
-    get title() { return tNode("presetAudioGen", "Audio Generator"); },
-    get description() { return tNode("presetAudioGenDesc", "Generate audio from text with Suno"); },
+    get title() { return tNode("presetAudioGen", "音频生成器"); },
+    get description() { return tNode("presetAudioGenDesc", "使用 Suno 从文本生成音频"); },
     icon: "audio",
     image: "https://images.unsplash.com/photo-1526512340740-9217d0159da9?q=80&w=500&auto=format&fit=crop",
     nodes: [
@@ -1114,7 +1127,7 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            get name() { return tNode("inputText", "Input Text"); }
+            get name() { return tNode("inputText", "输入文本"); }
           },
           formValues: {
             get prompt() { return presetCopy("presetAudioPrompt"); }
@@ -1172,8 +1185,8 @@ export const presets = [
   },
   {
     id: "captioning",
-    get title() { return tNode("presetCaption", "LLM Image Captioning"); },
-    get description() { return tNode("presetCaptionDesc", "Generate a prompt from an image with GPT-5"); },
+    get title() { return tNode("presetCaption", "LLM 图片描述"); },
+    get description() { return tNode("presetCaptionDesc", "使用 GPT-5 从图片生成提示词"); },
     icon: "text",
     image: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg",
     nodes: [
@@ -1183,7 +1196,7 @@ export const presets = [
         data: {
           selectedModel: {
             id: "image-passthrough",
-            get name() { return tNode("inputImage", "Input Image"); }
+            get name() { return tNode("inputImage", "输入图片"); }
           },
           formValues: {
             image_url: "https://cdn.muapi.ai/outputs/a4c650a8834a4a14a82a961710617fd2.jpg"
@@ -1226,7 +1239,7 @@ export const presets = [
         data: {
           selectedModel: {
             id: "text-passthrough",
-            get name() { return tNode("inputText", "Input Text"); }
+            get name() { return tNode("inputText", "输入文本"); }
           },
           formValues: {
             get prompt() { return presetCopy("presetCaptionPrompt"); }

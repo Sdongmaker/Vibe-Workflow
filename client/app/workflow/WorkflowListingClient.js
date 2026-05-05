@@ -20,6 +20,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
   const [dropDown, setDropDown] = useState(0);
   const [workflowName, setWorkflowName] = useState("");
   const [renameId, setRenameId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     const fromBuilder = sessionStorage.getItem("fromWorkflowBuilder");
@@ -37,7 +38,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response?.data?.error || t("toastFailedFetch"));
+        toast.error(t("toastFailedFetch"));
         setWorkflowList([]);
       })
       .finally(() => {
@@ -46,18 +47,16 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
   };
 
   const handleDeleteWorkflow = (deleteId) => {
-    const confirmDelete = window.confirm(t("confirmDelete"));
-    if (!confirmDelete) return;
-
     axios.delete(`/api/workflow/delete-workflow-def/${deleteId}`)
       .then(() => {
         setWorkflowList(prev => prev.filter(w => w.id !== deleteId));
         setDropDown(0);
+        setDeleteTarget(null);
         toast.success(t("toastDeleteSuccess"));
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response?.data?.error || t("toastFailedDelete"));
+        toast.error(t("toastFailedDelete"));
       });
   };
 
@@ -68,6 +67,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
     axios.post(`/api/workflow/update-name/${id}`, { name: newName })
       .then(() => {
         setRenameId(null);
+        setWorkflowName("");
         setWorkflowList((prev) =>
           prev.map((w) =>
             w.id === id
@@ -80,7 +80,8 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
       .catch((error) => {
         console.error(error);
         setRenameId(null);
-        toast.error(error.response?.data?.error || t("toastFailedRename"));
+        setWorkflowName("");
+        toast.error(t("toastFailedRename"));
       })
       .finally(() => {
         setLoading(false);
@@ -113,7 +114,7 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
       .catch((error) => {
         console.error(error);
         setLoading(false);
-        toast.error(error.response?.data?.detail || t("toastServerErr"));
+        toast.error(t("toastServerErr"));
       });
   };
 
@@ -135,6 +136,8 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
               <button
                 onClick={handleCreateWorkFlow}
                 disabled={loading}
+                aria-label={t("newWorkflow")}
+                title={t("newWorkflowTitle")}
                 className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-bold transition-all shadow-[0_15px_30px_-10px_rgba(37,99,235,0.4)] hover:shadow-[0_20px_40px_-8px_rgba(37,99,235,0.5)] active:scale-95 disabled:opacity-50"
               >
                 <FaPlus />
@@ -166,7 +169,11 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
                   key={work.id}
                   className="group relative aspect-[3/4] rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-blue-500/30 hover:bg-white/[0.05] hover:-translate-y-1 shadow-2xl"
                 >
-                  <Link href={`/workflow/${work.id}`} className="absolute inset-0 z-0">
+                  <Link
+                    href={`/workflow/${work.id}`}
+                    aria-label={t("openWorkflowAria", { name: work.name || t("untitledFlow") })}
+                    className="absolute inset-0 z-0"
+                  >
                     {work.thumbnail ? (
                       <>
                         <div
@@ -188,12 +195,17 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
                         e.preventDefault();
                         setDropDown(dropDown === work.id ? 0 : work.id);
                       }}
+                      aria-label={dropDown === work.id ? t("closeMenuAria") : t("openMenuAria")}
+                      title={dropDown === work.id ? t("closeMenuAria") : t("openMenuAria")}
+                      aria-expanded={dropDown === work.id}
+                      aria-controls={`workflow-actions-${work.id}`}
                       className="p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-zinc-400 hover:text-white transition-all hover:scale-110 shadow-lg"
                     >
                       <SlOptions size={16} />
                     </button>
                     {dropDown === work.id && (
                       <div
+                        id={`workflow-actions-${work.id}`}
                         className="absolute right-0 mt-2 w-36 py-1 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2"
                         onMouseLeave={() => setDropDown(0)}
                       >
@@ -202,7 +214,9 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
                             e.preventDefault();
                             setRenameId(work.id);
                             setWorkflowName(work.name);
+                            setDropDown(0);
                           }}
+                          aria-label={t("rename")}
                           className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors"
                         >
                           <FaRegEdit size={14} /> {t("rename")}
@@ -210,8 +224,10 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
                         <button
                           onClick={(e) => {
                             e.preventDefault();
-                            handleDeleteWorkflow(work.id);
+                            setDeleteTarget(work);
+                            setDropDown(0);
                           }}
+                          aria-label={t("delete")}
                           className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
                         >
                           <FiTrash2 size={14} /> {t("delete")}
@@ -249,6 +265,10 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
 
       {renameId && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="rename-workflow-title"
+          aria-describedby="rename-workflow-description"
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 animate-in fade-in duration-300"
           onClick={() => setRenameId(null)}
         >
@@ -258,15 +278,18 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
           >
             <div className="flex flex-col gap-6">
               <div className="text-center">
-                <h3 className="text-xl font-black uppercase tracking-widest text-white">{t("renameFlow")}</h3>
-                <p className="text-zinc-500 text-xs font-bold mt-1 uppercase tracking-tighter">{t("renameIdentity")}</p>
+                <h3 id="rename-workflow-title" className="text-xl font-black uppercase tracking-widest text-white">{t("renameFlow")}</h3>
+                <p id="rename-workflow-description" className="text-zinc-500 text-xs font-bold mt-1 uppercase tracking-tighter">{t("renameIdentity")}</p>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-1">{t("newIdentity")}</label>
+                <label htmlFor="workflow-name-input" className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-1">{t("newIdentity")}</label>
                 <input
+                  id="workflow-name-input"
                   type="text"
                   value={workflowName}
                   autoFocus
+                  aria-label={t("workflowNameInputAria")}
+                  placeholder={t("workflowNamePlaceholder")}
                   onChange={(e) => setWorkflowName(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all font-bold uppercase tracking-tight"
                   onKeyDown={(e) => {
@@ -277,15 +300,61 @@ const WorkflowListingClient = ({ initialWorkflowList }) => {
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => setRenameId(null)}
+                  aria-label={t("discard")}
                   className="flex-1 py-3 px-4 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 font-black uppercase tracking-widest text-xs transition-all"
                 >
                   {t("discard")}
                 </button>
                 <button
                   onClick={() => handleRenameWorkflow(renameId, workflowName)}
+                  aria-label={t("commitChanges")}
                   className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-xs transition-all shadow-lg"
                 >
                   {t("commitChanges")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-workflow-title"
+          aria-describedby="delete-workflow-description"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 animate-in fade-in duration-300"
+          onClick={() => setDeleteTarget(null)}
+        >
+          <div
+            className="w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col gap-6">
+              <div className="text-center">
+                <h3 id="delete-workflow-title" className="text-xl font-black uppercase tracking-widest text-white">{t("deleteFlow")}</h3>
+                <p id="delete-workflow-description" className="text-zinc-500 text-xs font-bold mt-1 uppercase tracking-tighter">
+                  {t("deleteWorkflowDialogDescription", { name: deleteTarget.name || t("untitledFlow") })}
+                </p>
+                <p className="mt-3 text-xs font-medium leading-5 text-zinc-500">
+                  {t("deleteIdentity")}
+                </p>
+              </div>
+              <div className="flex gap-4 pt-4">
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  aria-label={t("deleteWorkflowDialogCancel")}
+                  className="flex-1 py-3 px-4 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 font-black uppercase tracking-widest text-xs transition-all"
+                >
+                  {t("deleteWorkflowDialogCancel")}
+                </button>
+                <button
+                  onClick={() => handleDeleteWorkflow(deleteTarget.id)}
+                  aria-label={t("confirmDeleteAction")}
+                  className="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest text-xs transition-all shadow-lg"
+                >
+                  {t("confirmDeleteAction")}
                 </button>
               </div>
             </div>

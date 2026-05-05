@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import workflow_router, app_router
 
-app = FastAPI(title="Workflow API", version="1.0.0")
+app = FastAPI(title="工作流接口", version="1.0.0")
 
 app.include_router(workflow_router.router, prefix="/api/workflow", tags=["workflow"])
 app.include_router(app_router.router, prefix="/api/app", tags=["app"])
@@ -26,7 +26,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Workflow API"}
+    return {"message": "欢迎使用工作流接口"}
 
 @app.get("/api/health")
 async def health_check():

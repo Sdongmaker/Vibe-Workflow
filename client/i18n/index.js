@@ -25,10 +25,11 @@ i18n
     defaultNS: 'common',
     interpolation: { escapeValue: false },
     detection: {
-      order: ['localStorage', 'querystring'],
+      order: ['querystring', 'cookie', 'localStorage'],
       lookupQuerystring: 'lang',
+      lookupCookie: 'i18n_lang',
       lookupLocalStorage: 'i18n_lang',
-      caches: ['localStorage'],
+      caches: ['localStorage', 'cookie'],
     },
   });
 

@@ -2,6 +2,9 @@ import importlib
 import os
 import tempfile
 import unittest
+from unittest.mock import Mock, patch
+
+from fastapi import HTTPException
 
 
 class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
@@ -23,7 +26,6 @@ class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
         created = await self.workflow_helper.create_or_update_workflow(
             {
                 "workflow_id": None,
-                "name": "Untitled Workflow",
                 "edges": [],
                 "data": {"nodes": []},
             }
@@ -34,7 +36,8 @@ class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
         workflows = await self.workflow_helper.get_workflow_defs_helper()
         self.assertEqual(len(workflows), 1)
         self.assertEqual(workflows[0]["id"], created["workflow_id"])
-        self.assertEqual(workflows[0]["name"], "Untitled Workflow")
+        self.assertEqual(workflows[0]["name"], "未命名工作流")
+        self.assertEqual(workflows[0]["category"], "通用")
 
         fetched = await self.workflow_helper.get_workflow_def_helper(
             created["workflow_id"]
@@ -51,3 +54,77 @@ class LocalWorkflowFallbackTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("image-passthrough", schemas["categories"]["image"]["models"])
         self.assertIn("video-passthrough", schemas["categories"]["video"]["models"])
         self.assertIn("audio-passthrough", schemas["categories"]["audio"]["models"])
+
+        text_schema = schemas["categories"]["text"]["models"]["text-passthrough"][
+            "input_schema"
+        ]["schemas"]["input_data"]
+        image_field = schemas["categories"]["image"]["models"]["image-passthrough"][
+            "input_schema"
+        ]["schemas"]["input_data"]["properties"]["image_url"]
+        video_list = schemas["categories"]["utility"]["models"]["video-combiner"][
+            "input_schema"
+        ]["schemas"]["input_data"]["properties"]["videos_list"]
+
+        self.assertEqual(text_schema["title"], "输入文本")
+        self.assertEqual(text_schema["properties"]["prompt"]["title"], "提示词")
+        self.assertEqual(
+            text_schema["properties"]["prompt"]["description"], "工作流的文本输入。"
+        )
+        self.assertEqual(image_field["title"], "图片 URL")
+        self.assertEqual(image_field["description"], "输入图片的 URL。")
+        self.assertEqual(video_list["title"], "视频片段")
+
+    async def test_local_workflow_errors_are_chinese(self):
+        with self.assertRaises(Exception) as context:
+            await self.workflow_helper.get_workflow_def_helper("missing-id")
+
+        self.assertEqual(context.exception.detail, "未找到工作流")
+
+    async def test_missing_muapi_key_error_is_chinese(self):
+        with self.assertRaises(Exception) as context:
+            await self.workflow_helper.get_api_key()
+
+        self.assertEqual(
+            context.exception.detail,
+            "请先在 .env 中配置 MU_API_KEY，才能使用工作流服务",
+        )
+
+    async def test_dynamic_cost_is_available_without_real_muapi_key(self):
+        cost = await self.workflow_helper.calculate_dynamic_cost_helper(
+            {"task_name": "text-passthrough", "payload": {"prompt": "hello"}}
+        )
+
+        self.assertEqual(cost, {"cost": 0})
+
+    async def test_remote_english_detail_is_not_returned_to_user(self):
+        self.workflow_helper.MU_API_KEY = "real-test-key"
+
+        response = Mock()
+        response.status_code = 404
+        response.content = b'{"detail":"Workflow not found"}'
+        response.json.return_value = {"detail": "Workflow not found"}
+
+        with patch("httpx.AsyncClient") as client_class:
+            client = client_class.return_value.__aenter__.return_value
+            client.get.return_value = response
+
+            with self.assertRaises(HTTPException) as context:
+                await self.workflow_helper.proxy_request_helper(
+                    "GET", "https://example.test/workflow"
+                )
+
+        self.assertEqual(context.exception.status_code, 404)
+        self.assertEqual(context.exception.detail, "未找到工作流")
+
+    async def test_router_regular_exception_uses_chinese_detail(self):
+        from app.routers import workflow_router
+
+        class BadRequest:
+            async def json(self):
+                raise ValueError("Invalid payload")
+
+        with self.assertRaises(HTTPException) as context:
+            await workflow_router.create_workflow(BadRequest())
+
+        self.assertEqual(context.exception.status_code, 400)
+        self.assertEqual(context.exception.detail, "请求处理失败，请稍后重试")

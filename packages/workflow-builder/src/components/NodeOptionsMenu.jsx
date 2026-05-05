@@ -41,6 +41,8 @@ const NodeOptionsMenu = ({
           setIsOpen(!isOpen);
         }}
         className="p-1.5 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-all outline-none"
+        title={t("moreOptions")}
+        aria-label={t("moreOptions")}
       >
         <BsThreeDots size={18} />
       </button>
@@ -50,6 +52,8 @@ const NodeOptionsMenu = ({
           <button
             type="button"
             suppressHydrationWarning={true}
+            title={t("duplicate")}
+            aria-label={t("duplicate")}
             onClick={(e) => {
               e.stopPropagation();
               onDuplicate(nodeId);
@@ -65,6 +69,8 @@ const NodeOptionsMenu = ({
             <button
               type="button"
               suppressHydrationWarning={true}
+              title={t("download")}
+              aria-label={t("download")}
               onClick={(e) => {
                 e.stopPropagation();
                 downloadFile(downloadUrl, `${nodeId}_output`);
@@ -81,6 +87,8 @@ const NodeOptionsMenu = ({
             <button
               type="button"
               suppressHydrationWarning={true}
+              title={t("setThumbnail")}
+              aria-label={t("setThumbnail")}
               onClick={(e) => {
                 e.stopPropagation();
                 if (onSetThumbnail) onSetThumbnail();
@@ -96,6 +104,8 @@ const NodeOptionsMenu = ({
           <button
             type="button"
             suppressHydrationWarning={true}
+            title={t("deleteNode", { id: nodeId })}
+            aria-label={t("deleteNode", { id: nodeId })}
             onClick={(e) => {
               e.stopPropagation();
               onDelete();

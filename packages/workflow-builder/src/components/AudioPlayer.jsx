@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FaPause, FaPlay, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
+import { toast } from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 const AudioPlayer = ({ src, className }) => {
+  const { t } = useTranslation("nodes");
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -15,7 +18,9 @@ const AudioPlayer = ({ src, className }) => {
     if (isPlaying) {
       audioRef.current.pause();
     } else {
-      audioRef.current.play();
+      audioRef.current.play().catch(() => {
+        toast.error(t("mediaPlaybackFailed"));
+      });
     }
     setIsPlaying(!isPlaying);
   };
@@ -85,7 +90,13 @@ const AudioPlayer = ({ src, className }) => {
 
   return (
     <div className={className || "flex flex-col items-center justify-center p-4 w-full h-full bg-gradient-to-br from-[#121418] to-[#08090a] rounded-xl border border-white/5 relative group transition-all duration-500 select-none"}>
-      <audio ref={audioRef} src={src} crossOrigin="anonymous" />
+      <audio
+        ref={audioRef}
+        src={src}
+        crossOrigin="anonymous"
+        aria-label={t("audioPreview")}
+        onError={() => toast.error(t("mediaLoadFailed"))}
+      />
       <div 
         className="flex items-center justify-center gap-[2px] w-full h-12 mb-4 px-4 overflow-hidden"
         style={{ 
@@ -113,6 +124,8 @@ const AudioPlayer = ({ src, className }) => {
           type="button"
           suppressHydrationWarning={true}
           onClick={toggleAudio}
+          title={isPlaying ? t("pause") : t("play")}
+          aria-label={isPlaying ? t("pause") : t("play")}
           className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-110 active:scale-95 group/play"
         >
           {isPlaying ? (
@@ -129,6 +142,8 @@ const AudioPlayer = ({ src, className }) => {
             step="0.1"
             value={progress || 0}
             onChange={handleSeek}
+            title={t("playbackProgress")}
+            aria-label={t("playbackProgress")}
             className="w-full h-1.5 rounded-full appearance-none cursor-pointer hover:h-2 transition-all seek-bar active:-translate-y-px"
             style={{
               background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${progress || 0}%, rgba(255, 255, 255, 0.1) ${progress || 0}%, rgba(255, 255, 255, 0.1) 100%)`
@@ -148,6 +163,8 @@ const AudioPlayer = ({ src, className }) => {
             type="button"
             suppressHydrationWarning={true}
             onClick={toggleMute} 
+            title={isMuted || volume === 0 ? t("unmute") : t("mute")}
+            aria-label={isMuted || volume === 0 ? t("unmute") : t("mute")}
             className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-white transition-colors hover:bg-white/5 rounded-full"
           >
             {isMuted || volume === 0 ? <FaVolumeMute size={14} /> : <FaVolumeUp size={14} />}
@@ -162,6 +179,8 @@ const AudioPlayer = ({ src, className }) => {
                 vertical="true"
                 value={volume} 
                 onChange={handleVolumeChange}
+                title={t("volume")}
+                aria-label={t("volume")}
                 className="h-full w-1 accent-blue-500 cursor-pointer appearance-none bg-white/10 rounded-full"
                 style={{
                   WebkitAppearance: 'slider-vertical',
@@ -178,4 +197,3 @@ const AudioPlayer = ({ src, className }) => {
 };
 
 export default AudioPlayer;
-

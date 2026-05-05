@@ -18,23 +18,19 @@ import { RiInputMethodLine } from "react-icons/ri";
 import { LuUpload } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import "../i18n";
+import { displayModelName, MODEL_DISPLAY_NAME_KEYS } from "./modelDisplayName";
 
 const formatName = (id) => id.replace(/-/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+const getLocalizedModelName = (t, model) => {
+  return displayModelName(model, t) || "";
+};
 
 const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchemas = {} }) => {
   const [activeSubMenu, setActiveSubMenu] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const menuRef = useRef(null);
   const { t } = useTranslation("nodes");
-  const SPECIAL_MODEL_NAMES = {
-    "text-passthrough": t("inputText"),
-    "image-passthrough": t("inputImage"),
-    "video-passthrough": t("inputVideo"),
-    "audio-passthrough": t("inputAudio"),
-    "prompt-concatenator": t("promptConcatenator"),
-    "video-combiner": t("videoCombiner"),
-  };
-
   const getNodeTypeFromSubmenuId = (id) => {
     if (id === 'inputs') return ['textNode', 'imageNode', 'videoNode', 'audioNode'];
     if (id.includes('text-llms') || id === 'text-llms') return 'textNode';
@@ -68,7 +64,8 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       modelsMap ? Object.entries(modelsMap).map(([id, model]) => ({
         ...model,
         id,
-        name: SPECIAL_MODEL_NAMES[id] || formatName(id)
+        displayNameKey: model.displayNameKey || MODEL_DISPLAY_NAME_KEYS[id],
+        name: model.name || formatName(id)
       })) : [];
 
     const imageModels = mapModels(categories.image?.models);
@@ -84,7 +81,8 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       if (!utilityModels.find(um => um.id === m.id)) {
         utilityModels.push({
           ...m,
-          name: SPECIAL_MODEL_NAMES[m.id] || m.name,
+          displayNameKey: m.displayNameKey || MODEL_DISPLAY_NAME_KEYS[m.id],
+          name: m.name,
         });
       }
     });
@@ -173,22 +171,22 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
 
   const getSubmenuItems = (id) => {
     switch (id) {
-      case "inputs": return categorizedModels.inputs.map(m => ({ label: m.name, model: m, type: m.type }));
-      case "text-utils": 
-      case "utilities": 
-        return categorizedModels.utilities.map(m => ({ 
-          label: m.name, 
-          model: m, 
-          type: m.id === "video-combiner" ? "vidConcatNode" : "concatNode" 
+      case "inputs": return categorizedModels.inputs.map(m => ({ label: getLocalizedModelName(t, m), model: m, type: m.type }));
+      case "text-utils":
+      case "utilities":
+        return categorizedModels.utilities.map(m => ({
+          label: getLocalizedModelName(t, m),
+          model: m,
+          type: m.id === "video-combiner" ? "vidConcatNode" : "concatNode"
         }));
-      case "generate-image": return categorizedModels.generateImage.map(m => ({ label: m.name, model: m, type: "imageNode" }));
-      case "edit-image": return categorizedModels.editImage.map(m => ({ label: m.name, model: m, type: "imageNode" }));
-      case "upscale-image": return categorizedModels.upscaleImage.map(m => ({ label: m.name, model: m, type: "imageNode" })); // May be empty
-      case "text-llms": return categorizedModels.text.map(m => ({ label: m.name, model: m, type: "textNode" }));
-      case "generate-video": return categorizedModels.generateVideo.map(m => ({ label: m.name, model: m, type: "videoNode" }));
-      case "edit-video": return categorizedModels.editVideo.map(m => ({ label: m.name, model: m, type: "videoNode" }));
-      case "generate-audio": return categorizedModels.audio.map(m => ({ label: m.name, model: m, type: "audioNode" }));
-      case "api-models": return categorizedModels.api.map(m => ({ label: m.name, model: m, type: "apiNode" }));
+      case "generate-image": return categorizedModels.generateImage.map(m => ({ label: getLocalizedModelName(t, m), model: m, type: "imageNode" }));
+      case "edit-image": return categorizedModels.editImage.map(m => ({ label: getLocalizedModelName(t, m), model: m, type: "imageNode" }));
+      case "upscale-image": return categorizedModels.upscaleImage.map(m => ({ label: getLocalizedModelName(t, m), model: m, type: "imageNode" })); // May be empty
+      case "text-llms": return categorizedModels.text.map(m => ({ label: getLocalizedModelName(t, m), model: m, type: "textNode" }));
+      case "generate-video": return categorizedModels.generateVideo.map(m => ({ label: getLocalizedModelName(t, m), model: m, type: "videoNode" }));
+      case "edit-video": return categorizedModels.editVideo.map(m => ({ label: getLocalizedModelName(t, m), model: m, type: "videoNode" }));
+      case "generate-audio": return categorizedModels.audio.map(m => ({ label: getLocalizedModelName(t, m), model: m, type: "audioNode" }));
+      case "api-models": return categorizedModels.api.map(m => ({ label: getLocalizedModelName(t, m), model: m, type: "apiNode" }));
       default: return [];
     }
   };
@@ -214,7 +212,14 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
       ...apiNodeModels.map(m => ({ ...m, type: "apiNode" })),
     ];
 
-    const filtered = allModels.filter(m => m && m.name && m.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filtered = allModels.filter(m => {
+      if (!m) return false;
+      const visibleName = getLocalizedModelName(t, m);
+      return (
+        visibleName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.id?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
 
     return (
       <div className="flex flex-col gap-1 w-full max-h-96 overflow-y-auto">
@@ -223,6 +228,8 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
             type="button"
             suppressHydrationWarning={true}
             key={idx}
+            title={getLocalizedModelName(t, item)}
+            aria-label={getLocalizedModelName(t, item)}
             className="flex items-center gap-2 px-3 py-2 text-xs text-white hover:bg-[#2c3037] rounded cursor-pointer transition text-left"
             onClick={() => handleAddNode(item.type, item)}
           >
@@ -232,7 +239,7 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
             {item.type === "audioNode" && <AiOutlineAudio />}
             {item.type === "concatNode" && <TbArrowMerge className="rotate-90" />}
             {item.type === "apiNode" && <RiInputMethodLine />}
-            <span>{item.name}</span>
+            <span>{getLocalizedModelName(t, item)}</span>
           </button>
         )) : (
           <div className="px-3 py-2 text-xs text-gray-500">{t("noResults")}</div>
@@ -309,6 +316,7 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
           <input
             type="search"
             placeholder={t("searchNodes")}
+            aria-label={t("searchNodes")}
             className="w-full h-full py-2 px-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 bg-transparent"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -325,6 +333,8 @@ const NodesNavbar = ({ addNode, apiNodeModels, filterNodeTypes = null, nodeSchem
                     <div
                       key={i}
                       className={`flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer group transition-colors relative ${activeSubMenu === item.id ? "bg-[#2c3037] text-white" : "text-gray-300 hover:bg-[#212326] hover:text-white"}`}
+                      title={item.label}
+                      aria-label={item.label}
                       onMouseEnter={() => {
                         if (item.hasSubmenu) {
                           setActiveSubMenu(item.id);
@@ -455,6 +465,8 @@ const Submenu = ({ activeSubMenu, menuStructure, getSubmenuItems, handleAddNode,
     >
       <div
         className="flex items-center gap-2 text-[10px] text-gray-400 px-2 py-2 font-medium border-b border-gray-800 cursor-pointer hover:text-white transition-colors"
+        title={menuStructure.flatMap(s => s.items).find(i => i.id === activeSubMenu)?.label}
+        aria-label={menuStructure.flatMap(s => s.items).find(i => i.id === activeSubMenu)?.label}
         onClick={() => position.side === "overlay" && onBack()}
       >
         {position.side === "overlay" && <FaAngleLeft />}
@@ -467,6 +479,8 @@ const Submenu = ({ activeSubMenu, menuStructure, getSubmenuItems, handleAddNode,
               type="button"
               suppressHydrationWarning={true}
               key={idx}
+              title={item.label}
+              aria-label={item.label}
               className="flex items-center gap-2 px-2 py-2 text-xs text-gray-300 hover:bg-[#2c3037] hover:text-white rounded-lg cursor-pointer transition text-left"
               onClick={() => handleAddNode(item.type, item.model)}
             >

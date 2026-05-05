@@ -1,5 +1,10 @@
 from fastapi import APIRouter, HTTPException, Request
-from app.utils.workflow_helper import get_file_upload_url_helper
+
+from app.utils.workflow_helper import (
+    calculate_dynamic_cost_helper,
+    get_file_upload_url_helper,
+    public_exception_detail,
+)
 
 router = APIRouter()
 
@@ -10,5 +15,17 @@ async def get_file_upload_url(request: Request):
         params = dict(request.query_params)
         return await get_file_upload_url_helper(params)
     except Exception as e:
-        if isinstance(e, HTTPException): raise e
-        raise HTTPException(status_code=400, detail=str(e))
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail=public_exception_detail(e))
+
+
+@router.post("/calculate_dynamic_cost")
+async def calculate_dynamic_cost(request: Request):
+    try:
+        payload = await request.json()
+        return await calculate_dynamic_cost_helper(payload)
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail=public_exception_detail(e))

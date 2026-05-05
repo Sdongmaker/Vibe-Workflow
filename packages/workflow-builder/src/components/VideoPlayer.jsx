@@ -12,7 +12,15 @@ const VideoPlayer = ({
   className = "w-full h-full object-contain",
   accentColor = "#f97316"
 }) => {
-  const { t } = useTranslation("nodes");
+  const { t, i18n } = useTranslation("nodes");
+  const activeLanguage = i18n.resolvedLanguage || i18n.language || "";
+  const shouldShowBrowserStatusText = activeLanguage.toLowerCase().startsWith("en");
+  const getVisibleBrowserMessage = (message, fallback) => {
+    const text = typeof message === "string" ? message.trim() : "";
+    if (!text) return fallback;
+    if (shouldShowBrowserStatusText) return text;
+    return fallback;
+  };
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -27,7 +35,9 @@ const VideoPlayer = ({
     e?.stopPropagation();
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
-      videoRef.current.play();
+      videoRef.current.play().catch((err) => {
+        toast.error(getVisibleBrowserMessage(err?.message, t("mediaPlaybackFailed")));
+      });
     } else {
       videoRef.current.pause();
     }
@@ -44,7 +54,11 @@ const VideoPlayer = ({
     
     if (!document.fullscreenElement) {
       containerRef.current.requestFullscreen().catch((err) => {
-        toast.error(t("fullscreenFailed", { message: err.message }));
+        toast.error(
+          shouldShowBrowserStatusText && err.message
+            ? t("fullscreenFailed", { message: err.message })
+            : t("fullscreenFailedGeneric")
+        );
       });
     } else {
       document.exitFullscreen();
@@ -61,6 +75,7 @@ const VideoPlayer = ({
   }, []);
 
   const formatTime = (seconds) => {
+    if (!Number.isFinite(seconds)) return "0:00";
     const min = Math.floor(seconds / 60);
     const sec = Math.floor(seconds % 60);
     return `${min}:${sec.toString().padStart(2, '0')}`;
@@ -83,7 +98,10 @@ const VideoPlayer = ({
         onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
+        onError={() => toast.error(t("mediaLoadFailed"))}
         onClick={togglePlay}
+        title={isPlaying ? t("pause") : t("play")}
+        aria-label={t("videoPreview")}
         className={`${className} cursor-pointer`}
       />
 
@@ -91,11 +109,17 @@ const VideoPlayer = ({
       {!isPlaying && (
         <div 
           className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover/video:opacity-100 transition-opacity duration-300"
-          onClick={togglePlay}
         >
-          <div className="w-16 h-16 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 shadow-2xl transform group-hover/video:scale-110 transition-transform pointer-events-auto cursor-pointer">
-            <IoPlay size={32} className="ml-1" />
-          </div>
+          <button
+            type="button"
+            suppressHydrationWarning={true}
+            onClick={togglePlay}
+            title={isPlaying ? t("pause") : t("play")}
+            aria-label={isPlaying ? t("pause") : t("play")}
+            className="w-16 h-16 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 shadow-2xl transform group-hover/video:scale-110 transition-transform pointer-events-auto cursor-pointer"
+          >
+            <IoPlay size={32} className="ml-1" aria-hidden="true" />
+          </button>
         </div>
       )}
 
@@ -112,6 +136,8 @@ const VideoPlayer = ({
             videoRef.current.currentTime = time;
             setCurrentTime(time);
           }}
+          title={t("playbackProgress")}
+          aria-label={t("playbackProgress")}
           className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer hover:h-1.5 transition-all seek-bar"
           style={{
             background: `linear-gradient(to right, ${accentColor} 0%, ${accentColor} ${(currentTime / (duration || 1)) * 100}%, rgba(255, 255, 255, 0.2) ${(currentTime / (duration || 1)) * 100}%, rgba(255, 255, 255, 0.2) 100%)`
@@ -124,6 +150,8 @@ const VideoPlayer = ({
               type="button"
               suppressHydrationWarning={true}
               onClick={togglePlay}
+              title={isPlaying ? t("pause") : t("play")}
+              aria-label={isPlaying ? t("pause") : t("play")}
               className="text-white/90 hover:text-white transition-colors"
             >
               {isPlaying ? <IoPause size={18} /> : <IoPlay size={18} />}
@@ -134,6 +162,8 @@ const VideoPlayer = ({
                 type="button"
                 suppressHydrationWarning={true}
                 onClick={toggleMute}
+                title={isMuted ? t("unmute") : t("mute")}
+                aria-label={isMuted ? t("unmute") : t("mute")}
                 className="text-white/90 hover:text-white transition-colors"
               >
                 {isMuted ? <IoVolumeMute size={18} /> : <IoVolumeHigh size={18} />}
@@ -150,6 +180,8 @@ const VideoPlayer = ({
                   videoRef.current.volume = val;
                   if (val > 0) setIsMuted(false);
                 }}
+                title={t("volume")}
+                aria-label={t("volume")}
                 className="w-0 group-hover/volume:w-16 h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-white transition-all overflow-hidden"
               />
             </div>
@@ -163,6 +195,8 @@ const VideoPlayer = ({
             type="button"
             suppressHydrationWarning={true}
             onClick={handleToggleFullscreen}
+            title={isFullscreen ? t("exitFullscreen") : t("enterFullscreen")}
+            aria-label={isFullscreen ? t("exitFullscreen") : t("enterFullscreen")}
             className="text-white/90 hover:text-white transition-colors"
           >
             {isFullscreen ? <IoContract size={18} /> : <IoExpand size={18} />}

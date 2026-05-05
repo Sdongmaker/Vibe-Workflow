@@ -1,5 +1,24 @@
 {
   "workflowPro": "WorkflowPro",
-  "getApiKey": "获取 API Key",
-  "switchLang": "EN"
+  "getApiKey": "获取 API 密钥",
+  "getApiKeyAria": "打开 API 密钥页面",
+  "switchLang": "英",
+  "switchLangAria": "切换语言到英文",
+  "siteTitle": "Vibe Workflow - 开源 AI 工作流编排平台",
+  "siteDescription": "Vibe Workflow 是一个免费、开源、可自托管的节点式 AI 工作流编排平台，帮助你用可视化节点编辑器构建生成式 AI 流程，无需订阅。",
+  "siteOgDescription": "免费、开源、可自托管的节点式 AI 工作流编排平台，帮助你用可视化节点编辑器构建生成式 AI 流程。",
+  "siteTwitterDescription": "免费、开源、可自托管的节点式 AI 工作流编排平台，帮助你用可视化节点编辑器构建生成式 AI 流程。",
+  "siteKeywords": [
+    "Vibe Workflow",
+    "开源 AI 工作流",
+    "节点式 AI 编辑器",
+    "生成式 AI 流程",
+    "可视化工作流",
+    "自托管 AI",
+    "AI 工作流自动化",
+    "无代码 AI 工作流",
+    "AI 图像生成流程",
+    "AI 视频生成流程",
+    "开源生成式 AI"
+  ]
 }

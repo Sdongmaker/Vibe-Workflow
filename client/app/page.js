@@ -7,7 +7,13 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 
 export default function Home() {
-  const { t } = useTranslation(["landing", "common"]);
+  const { t, i18n } = useTranslation(["landing", "common"]);
+  const trustedBrands = t("trustedBrands", { returnObjects: true });
+  const brandList = Array.isArray(trustedBrands) ? trustedBrands : [];
+  const isChinese = i18n.language?.startsWith("zh");
+  const trustedBrandClassName = isChinese
+    ? "font-bold text-xl tracking-normal not-italic"
+    : "font-black text-xl tracking-tighter italic uppercase";
   return (
     <div className="relative min-h-screen w-full bg-[#030303] text-white overflow-hidden selection:bg-blue-500/30">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
@@ -26,6 +32,9 @@ export default function Home() {
           <Link
             href="https://muapi.ai/access-keys"
             target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t("getApiKeyAria", { ns: "common" })}
+            title={t("getApiKeyAria", { ns: "common" })}
             className="bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 px-5 py-2 rounded-full text-sm font-medium transition-all"
           >
             {t("getApiKey", { ns: "common" })}
@@ -53,12 +62,19 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <Link
             href="/workflow"
+            aria-label={t("exploreWorkflowsAria")}
+            title={t("exploreWorkflowsAria")}
             className="group relative flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all shadow-[0_20px_40px_-15px_rgba(37,99,235,0.4)] hover:shadow-[0_25px_50px_-12px_rgba(37,99,235,0.5)] active:scale-95"
           >
             {t("exploreWorkflows")}
             <HiArrowRight className="group-hover:translate-x-1 transition-transform" />
           </Link>
-          <button className="px-8 py-4 rounded-full font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm">
+          <button
+            type="button"
+            aria-label={t("watchDemo")}
+            title={t("watchDemo")}
+            className="px-8 py-4 rounded-full font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm"
+          >
             {t("watchDemo")}
           </button>
         </div>
@@ -98,9 +114,11 @@ export default function Home() {
             {t("trustedBy")}
           </div>
           <div className="flex gap-8 overflow-hidden grayscale opacity-50">
-            <span className="font-black text-xl tracking-tighter italic">AURORA</span>
-            <span className="font-black text-xl tracking-tighter italic">METAVOX</span>
-            <span className="font-black text-xl tracking-tighter italic">NEXUS</span>
+            {brandList.map((brand) => (
+              <span key={brand} className={trustedBrandClassName}>
+                {brand}
+              </span>
+            ))}
           </div>
         </div>
       </footer>

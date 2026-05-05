@@ -11,8 +11,306 @@ import { TbBoxModel2, TbExternalLink } from "react-icons/tb";
 import { useTranslation } from "react-i18next";
 import "../i18n";
 
+const FIELD_LABEL_KEYS = {
+  prompt: "prompt",
+  prompt_text: "prompt",
+  promptText: "prompt",
+  text_prompt: "prompt",
+  textPrompt: "prompt",
+  input_text: "inputText",
+  inputText: "inputText",
+  system_prompt: "systemPrompt",
+  systemPrompt: "systemPrompt",
+  negative_prompt: "negativePrompt",
+  negativePrompt: "negativePrompt",
+  image: "image",
+  input_image: "inputImage",
+  inputImage: "inputImage",
+  source_image: "sourceImage",
+  sourceImage: "sourceImage",
+  reference_image: "referenceImage",
+  referenceImage: "referenceImage",
+  reference_images: "referenceImages",
+  referenceImages: "referenceImages",
+  image_url: "imageUrl",
+  imageUrl: "imageUrl",
+  image_urls: "imageUrls",
+  imageUrls: "imageUrls",
+  images: "images",
+  images_list: "images",
+  imagesList: "images",
+  last_image: "lastFrame",
+  lastImage: "lastFrame",
+  first_frame: "firstFrame",
+  firstFrame: "firstFrame",
+  first_image: "firstFrame",
+  firstImage: "firstFrame",
+  start_image: "firstFrame",
+  startImage: "firstFrame",
+  end_image: "lastFrame",
+  endImage: "lastFrame",
+  video: "video",
+  video_url: "videoUrl",
+  input_video: "inputVideo",
+  inputVideo: "inputVideo",
+  source_video: "sourceVideo",
+  sourceVideo: "sourceVideo",
+  reference_video: "referenceVideo",
+  referenceVideo: "referenceVideo",
+  videoUrl: "videoUrl",
+  videos: "videos",
+  videos_list: "videos",
+  videosList: "videos",
+  video_files: "videoFiles",
+  videoFiles: "videoFiles",
+  audio: "audio",
+  audio_url: "audioUrl",
+  input_audio: "inputAudio",
+  inputAudio: "inputAudio",
+  source_audio: "sourceAudio",
+  sourceAudio: "sourceAudio",
+  audioUrl: "audioUrl",
+  audios: "audios",
+  audios_list: "audios",
+  audiosList: "audios",
+  audio_files: "audioFiles",
+  audioFiles: "audioFiles",
+  aspect_ratio: "aspectRatio",
+  aspectRatio: "aspectRatio",
+  api_key: "apiKey",
+  apiKey: "apiKey",
+  model_name: "modelName",
+  modelName: "modelName",
+  model_type: "modelType",
+  modelType: "modelType",
+  model_url: "modelUrl",
+  modelUrl: "modelUrl",
+  model_id: "modelId",
+  modelId: "modelId",
+  task_type: "taskType",
+  taskType: "taskType",
+  air_model_id: "airModelId",
+  airModelId: "airModelId",
+  uid: "userId",
+  user_id: "userId",
+  userId: "userId",
+  category: "category",
+  model_category: "category",
+  modelCategory: "category",
+  subcategory: "subcategory",
+  model_identifier: "modelIdentifier",
+  modelIdentifier: "modelIdentifier",
+  seed: "seed",
+  width: "width",
+  height: "height",
+  duration: "duration",
+  resolution: "resolution",
+  quality: "quality",
+  style: "style",
+};
+
+const FIELD_DESCRIPTION_KEYS = {
+  prompt: "promptDesc",
+  prompt_text: "promptDesc",
+  promptText: "promptDesc",
+  text_prompt: "promptDesc",
+  textPrompt: "promptDesc",
+  input_text: "inputTextDesc",
+  inputText: "inputTextDesc",
+  system_prompt: "systemPromptDesc",
+  systemPrompt: "systemPromptDesc",
+  negative_prompt: "negativePromptDesc",
+  negativePrompt: "negativePromptDesc",
+  image: "imageUrlDesc",
+  input_image: "inputImageDesc",
+  inputImage: "inputImageDesc",
+  source_image: "sourceImageDesc",
+  sourceImage: "sourceImageDesc",
+  reference_image: "referenceImageDesc",
+  referenceImage: "referenceImageDesc",
+  reference_images: "referenceImagesDesc",
+  referenceImages: "referenceImagesDesc",
+  image_url: "imageUrlDesc",
+  imageUrl: "imageUrlDesc",
+  image_urls: "imageUrlsDesc",
+  imageUrls: "imageUrlsDesc",
+  images: "imagesListDesc",
+  images_list: "imagesListDesc",
+  imagesList: "imagesListDesc",
+  last_image: "lastFrameDesc",
+  lastImage: "lastFrameDesc",
+  first_frame: "firstFrameDesc",
+  firstFrame: "firstFrameDesc",
+  first_image: "firstFrameDesc",
+  firstImage: "firstFrameDesc",
+  start_image: "firstFrameDesc",
+  startImage: "firstFrameDesc",
+  end_image: "lastFrameDesc",
+  endImage: "lastFrameDesc",
+  video: "videoUrlDesc",
+  video_url: "videoUrlDesc",
+  input_video: "inputVideoDesc",
+  inputVideo: "inputVideoDesc",
+  source_video: "sourceVideoDesc",
+  sourceVideo: "sourceVideoDesc",
+  reference_video: "referenceVideoDesc",
+  referenceVideo: "referenceVideoDesc",
+  videoUrl: "videoUrlDesc",
+  videos: "videoClipsDesc",
+  videos_list: "videoClipsDesc",
+  videosList: "videoClipsDesc",
+  video_files: "videoFilesDesc",
+  videoFiles: "videoFilesDesc",
+  audio: "audioUrlDesc",
+  audio_url: "audioUrlDesc",
+  input_audio: "inputAudioDesc",
+  inputAudio: "inputAudioDesc",
+  source_audio: "sourceAudioDesc",
+  sourceAudio: "sourceAudioDesc",
+  audioUrl: "audioUrlDesc",
+  audios: "audiosListDesc",
+  audios_list: "audiosListDesc",
+  audiosList: "audiosListDesc",
+  audio_files: "audioFilesDesc",
+  audioFiles: "audioFilesDesc",
+  aspect_ratio: "aspectRatioDesc",
+  aspectRatio: "aspectRatioDesc",
+  api_key: "apiKeyDesc",
+  apiKey: "apiKeyDesc",
+  model_name: "modelNameDesc",
+  modelName: "modelNameDesc",
+  model_type: "modelTypeDesc",
+  modelType: "modelTypeDesc",
+  model_url: "modelUrlDesc",
+  modelUrl: "modelUrlDesc",
+  model_id: "modelIdDesc",
+  modelId: "modelIdDesc",
+  task_type: "taskTypeDesc",
+  taskType: "taskTypeDesc",
+  air_model_id: "airModelIdDesc",
+  airModelId: "airModelIdDesc",
+  uid: "userIdDesc",
+  user_id: "userIdDesc",
+  userId: "userIdDesc",
+  category: "categoryDesc",
+  model_category: "categoryDesc",
+  modelCategory: "categoryDesc",
+  subcategory: "subcategoryDesc",
+  model_identifier: "modelIdentifierDesc",
+  modelIdentifier: "modelIdentifierDesc",
+  seed: "seedDesc",
+  width: "widthDesc",
+  height: "heightDesc",
+  duration: "durationDesc",
+  resolution: "resolutionDesc",
+  quality: "qualityDesc",
+  style: "styleDesc",
+};
+
+const OPTION_LABEL_KEYS = {
+  auto: "optionAuto",
+  none: "optionNone",
+  default: "optionDefault",
+  chat: "optionChat",
+  image: "image",
+  video: "video",
+  audio: "audio",
+  imageInference: "optionImageInference",
+  textToVideo: "optionTextToVideo",
+  imageToVideo: "optionImageToVideo",
+  upscale: "optionUpscale",
+  removeBackground: "optionRemoveBackground",
+  high: "optionHigh",
+  medium: "optionMedium",
+  low: "optionLow",
+  portrait: "optionPortrait",
+  landscape: "optionLandscape",
+  square: "optionSquare",
+  fast: "modelPhraseFast",
+  standard: "modelPhraseStandard",
+  turbo: "modelPhraseTurbo",
+  pro: "modelPhrasePro",
+  edit: "modelPhraseEdit",
+  lite: "modelPhraseLite",
+  ultra: "modelPhraseUltra",
+  plus: "modelPhrasePlus",
+  dev: "modelPhraseDev",
+  flex: "modelPhraseFlex",
+  hd: "modelPhraseHd",
+  animate: "modelPhraseAnimate",
+  extend: "modelPhraseExtend",
+  spicy: "modelPhraseSpicy",
+  imageToImage: "modelPhraseImageToImage",
+  textToImage: "modelPhraseTextToImage",
+  imageToVideo: "modelPhraseImageToVideo",
+  textToVideo: "modelPhraseTextToVideo",
+  startEnd: "modelPhraseStartEnd",
+  motionControl: "modelPhraseMotionControl",
+  videoExtend: "modelPhraseVideoExtend",
+  referenceImage: "modelPhraseReferenceImage",
+  omniReference: "modelPhraseOmniReference",
+  styleReference: "modelPhraseStyleReference",
+  createMusic: "modelPhraseCreateMusic",
+  extendMusic: "modelPhraseExtendMusic",
+  remixMusic: "modelPhraseRemixMusic",
+  voiceClone: "modelPhraseVoiceClone",
+  speech: "modelPhraseSpeech",
+  reference: "modelPhraseReference",
+  modifyVideo: "modelPhraseModifyVideo",
+  reframe: "modelPhraseReframe",
+};
+
+const toCamelCaseKey = (value) => {
+  const rawValue = String(value || "").trim();
+  if (!rawValue) return "";
+  if (/^[a-z][A-Za-z0-9]*$/.test(rawValue)) return rawValue;
+
+  return rawValue
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[^a-zA-Z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .map((word, index) => {
+      const normalized = word.toLowerCase();
+      return index === 0
+        ? normalized
+        : normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    })
+    .join("");
+};
+
+const resolveTranslationKey = (map, ...candidates) => {
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (map[candidate]) return map[candidate];
+
+    const camelKey = toCamelCaseKey(candidate);
+    if (map[camelKey]) return map[camelKey];
+  }
+  return null;
+};
+
+const toReadableFieldName = (fieldName) => (
+  String(fieldName || "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+);
+
+const isTechnicalToken = (value) => {
+  const text = String(value ?? "").trim();
+  if (!text) return false;
+  return (
+    /^https?:\/\//i.test(text) ||
+    /^[\w.+-]+\/[\w.+-]+$/.test(text) ||
+    /^[\w.-]+:[\w.-]+$/.test(text) ||
+    /\d/.test(text) ||
+    /^[a-z0-9_.:/-]+$/.test(text)
+  );
+};
+
 const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handleChange, hasHandle = false, exposedHandles = [], onToggleHandle }) => {
-  const { t } = useTranslation("nodes");
+  const { t, i18n } = useTranslation("nodes");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dropDown, setDropDown] = useState(-1);
   const [uploading, setUploading] = useState(false);
@@ -32,10 +330,76 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
   const isAudioField = ['audio', 'audio_url'].includes(meta.field) || ['audio', 'audio_url'].includes(fieldName);
   const value = formValues[fieldName] ?? meta.default ?? "";
   const isRequired = meta.required || false;
+  const isZh = i18n.language?.startsWith("zh");
+  const fallbackFieldName = isZh
+    ? ""
+    : toReadableFieldName(fieldName);
+  const translateDisplay = (key, fallback) => t(key, { defaultValue: fallback });
+  const translateFieldLabel = () => {
+    const labelKey = resolveTranslationKey(
+      FIELD_LABEL_KEYS,
+      fieldName,
+      meta.field,
+      meta.name,
+      meta.title
+    );
+    return labelKey
+      ? translateDisplay(labelKey, isZh ? fallbackFieldName : (meta.title || meta.name || fallbackFieldName))
+      : (isZh ? t("fieldLabelFallbackShort") : t("fieldLabelFallback", { field: fallbackFieldName }));
+  };
+  const translateFieldDescription = () => {
+    const descriptionKey = resolveTranslationKey(
+      FIELD_DESCRIPTION_KEYS,
+      fieldName,
+      meta.field,
+      meta.name,
+      meta.title
+    );
+    return descriptionKey
+      ? translateDisplay(descriptionKey, isZh ? "" : (meta.description || ""))
+      : "";
+  };
+  const getOptionValue = (option) => (
+    typeof option === "object" && option !== null
+      ? option.value ?? option.label
+      : option
+  );
+  const getOptionLabel = (option) => (
+    typeof option === "object" && option !== null
+      ? option.label ?? option.value
+      : option
+  );
+  const translateOptionLabel = (option, optionIndex = -1) => {
+    const optionValue = getOptionValue(option);
+    const optionLabel = getOptionLabel(option);
+    const optionKey = resolveTranslationKey(
+      OPTION_LABEL_KEYS,
+      optionValue,
+      optionLabel
+    );
+    if (optionKey) {
+      return translateDisplay(optionKey, optionLabel ?? optionValue ?? "");
+    }
+
+    const fallback = optionLabel ?? optionValue ?? "";
+    if (isZh && !isTechnicalToken(fallback)) {
+      return optionIndex >= 0
+        ? t("optionFallback", { index: optionIndex + 1 })
+        : t("optionFallbackShort");
+    }
+
+    return String(fallback);
+  };
+  const fieldLabel = translateFieldLabel();
+  const fieldDescription = translateFieldDescription();
+  const fieldPlaceholder = isZh
+    ? t("fieldPlaceholderFallbackShort")
+    : t("fieldPlaceholderFallback", { field: fieldLabel });
+  const handleToggleTitle = exposedHandles.includes(fieldName) ? t("removeInput") : t("setAsInput");
   const label = (
     <div className="flex items-center justify-between w-full group/label">
       <label htmlFor={fieldName} className="text-xs font-bold text-zinc-500 text-start flex-grow cursor-pointer">
-        {fieldName}
+        {fieldLabel}
         {isRequired && <span className="text-blue-500 text-[9px] ml-1">{t("required")}</span>}
       </label>
       {onToggleHandle && (
@@ -44,7 +408,8 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
           suppressHydrationWarning={true}
           onClick={(e) => { e.stopPropagation(); onToggleHandle(fieldName); }}
           className={`p-1 rounded-lg transition-all group-hover/label:opacity-100 h-6 w-6 flex items-center justify-center ${exposedHandles.includes(fieldName) ? "text-blue-500 bg-blue-500/10 opacity-100" : "text-zinc-500 hover:text-white hover:bg-white/5 opacity-0"}`}
-          title={exposedHandles.includes(fieldName) ? t("removeInput") : t("setAsInput")}
+          title={handleToggleTitle}
+          aria-label={handleToggleTitle}
         >
           <TbExternalLink size={14} />
         </button>
@@ -118,8 +483,8 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
       })
     })
     .catch((error) => {
-      console.error("Upload failed", error);
-      toast.error(error?.response?.data?.detail || t("toastUploadFailed"));
+      console.error(t("toastUploadFailed"), error);
+      toast.error(isZh ? t("toastUploadFailed") : (error?.response?.data?.detail || t("toastUploadFailed")));
       setUploading(false);
       setUploadProgress(0);
     })
@@ -137,9 +502,11 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
 
   if (meta.enum) {
     const isManual = meta.allowManual || false;
+    const enumOptions = meta.enum || [];
     const filteredOptions = isManual && value 
-      ? meta.enum.filter(opt => (opt || "").toString().toLowerCase().includes((value || "").toString().toLowerCase()))
-      : meta.enum;
+      ? enumOptions.filter(opt => `${getOptionLabel(opt)} ${getOptionValue(opt)}`.toLowerCase().includes((value || "").toString().toLowerCase()))
+      : enumOptions;
+    const selectedOption = enumOptions.find((option) => getOptionValue(option) === getOptionValue(value));
 
     return (
       <div key={fieldName} className="flex flex-col gap-1 w-full relative">
@@ -190,11 +557,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
               >
                 <div className="flex items-center gap-2 truncate">
                   <span className="truncate">
-                    {(() => {
-                      if (typeof value === 'object') return value.label || value.value;
-                      const option = meta.enum?.find(opt => (typeof opt === 'object' ? opt.value : opt) === value);
-                      return typeof option === 'object' ? option.label : value;
-                    })()}
+                    {translateOptionLabel(selectedOption ?? value, enumOptions.indexOf(selectedOption))}
                   </span>
                 </div>
               </button>
@@ -204,6 +567,8 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
               type="button"
               suppressHydrationWarning={true}
               onClick={() => setDropDown((prev) => (prev === idx + 1 ? -1 : idx + 1))}
+              title={t("toggleOptions")}
+              aria-label={t("toggleOptions")}
               className="px-2 text-gray-400 hover:text-white cursor-pointer border-l border-gray-700 h-full flex items-center justify-center"
             >
               <FaAngleDown
@@ -230,14 +595,14 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
                   suppressHydrationWarning={true}
                   key={i}
                   className={`flex items-center gap-2 px-3 py-2 text-xs cursor-pointer rounded-lg transition-all ${
-                    (typeof option === "object" ? formValues[fieldName] === option.value : formValues[fieldName] === option)
+                    formValues[fieldName] === getOptionValue(option)
                       ? "bg-blue-500/10 text-blue-400"
                       : "text-zinc-400 hover:bg-white/5 hover:text-white"
                   }`}
-                  onClick={() => {handleChange(fieldName, typeof option === "object" ? option.value : option); setDropDown(-1)}}
+                  onClick={() => {handleChange(fieldName, getOptionValue(option)); setDropDown(-1)}}
                 >
-                  <span className="truncate">{typeof option === "object" ? option.label || option.value : option}</span>
-                  {(typeof option === "object" ? formValues[fieldName] === option.value : formValues[fieldName] === option) && (
+                  <span className="truncate">{translateOptionLabel(option, i)}</span>
+                  {formValues[fieldName] === getOptionValue(option) && (
                     <span className="ml-auto text-blue-400 font-bold">✓</span>
                   )}
                 </button>
@@ -319,6 +684,8 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
               type="button" 
               suppressHydrationWarning={true}
               onClick={() => handleChange(fieldName, '')} 
+              aria-label={t("removeFile")}
+              title={t("removeFile")}
               className="text-gray-500 group-hover:text-red-600 group-hover:font-black cursor-pointer absolute top-2 left-2"
             >
               &#10005;
@@ -362,14 +729,16 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
                 />
               )}
               <div className="inset-0 group-hover:bg-gray-600/40 absolute rounded">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   suppressHydrationWarning={true}
                   onClick={() => {
                     const updated = [...imageList];
                     updated.splice(idx, 1);
                     handleChange(fieldName, updated);
-                  }} 
+                  }}
+                  aria-label={t("removeFile")}
+                  title={t("removeFile")}
                   className="text-gray-500 group-hover:text-red-600 hover:font-bold cursor-pointer absolute top-2 left-2"
                 >
                   &#10005;
@@ -456,7 +825,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
           type="number"
           value={value}
           onChange={(e) => handleChange(fieldName, parseFloat(e.target.value || 0))}
-          placeholder={meta.description || ""}
+          placeholder={fieldDescription || t("inputValue")}
           className="bg-zinc-900/50 text-white text-xs p-2 rounded-lg border border-white/10 hover:border-white/20 transition-all outline-none focus:border-blue-500/50"
         />
       </div>
@@ -482,7 +851,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
           type="text"
           id={fieldName}
           value={value}
-          placeholder={meta.placeholder || meta.description || fieldName}
+          placeholder={fieldDescription || t("inputValue")}
           onChange={(e) => handleChange(fieldName, e.target.value)}
           className="bg-zinc-900/50 text-white text-xs py-2 px-3 rounded-lg border border-white/10 hover:border-white/20 transition-all w-full outline-none focus:border-blue-500/50"
         />
@@ -515,11 +884,11 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
             <span className={`flex items-center h-[20px] w-[36px] rounded-full p-1 duration-200 transition-all ${!!formValues[fieldName] ? "bg-blue-600 shadow-lg shadow-blue-900/40" : "bg-zinc-800 border border-white/10"}`}>
               <span className={`h-[12px] w-[12px] rounded-full bg-white duration-200 shadow-sm ${!!formValues[fieldName] && "translate-x-4"}`}></span>
             </span>
-          </label>
-          <p className="text-xs">{meta.description}</p>
-        </div>
-      </div>
-    )
+	          </label>
+	          {fieldDescription && <p className="text-xs">{fieldDescription}</p>}
+	        </div>
+	      </div>
+	    )
   };
 
   // if (meta.type === "string") {
@@ -539,7 +908,7 @@ const RenderApiField = ({ fieldName, meta, idx, formValues, setFormValues, handl
         value={value}
         readOnly
         // onChange={(e) => handleChange(fieldName, e.target.value)}
-        placeholder={meta.description || ""}
+        placeholder={fieldDescription || fieldPlaceholder}
         className="bg-zinc-900/50 text-white text-xs py-2 px-3 rounded-lg border border-white/10 hover:border-white/20 transition-all w-full outline-none focus:border-blue-500/50"
         rows={6}
       />

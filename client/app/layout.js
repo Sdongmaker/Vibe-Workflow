@@ -1,40 +1,49 @@
 import "./globals.css";
 import I18nProvider from "./components/I18nProvider";
+import { cookies } from "next/headers";
+import enCommon from "../i18n/locales/en/common.json";
+import zhCommon from "../i18n/locales/zh/common.json";
 
-export const metadata = {
-  title: "Vibe Workflow - 开源 AI 工作流编排平台",
-  description:
-    "Vibe Workflow 是一个免费、开源、可自托管的节点式 AI 工作流编排平台，帮助你用可视化节点编辑器构建生成式 AI 流程，无需订阅。",
-  keywords: [
-    "Vibe Workflow",
-    "开源 AI 工作流",
-    "节点式 AI 编辑器",
-    "生成式 AI 流程",
-    "可视化工作流",
-    "自托管 AI",
-    "AI 工作流自动化",
-    "无代码 AI 工作流",
-    "AI 图像生成流程",
-    "AI 视频生成流程",
-    "开源生成式 AI",
-  ],
-  openGraph: {
-    title: "Vibe Workflow - 开源 AI 工作流编排平台",
-    description:
-      "免费、开源、可自托管的节点式 AI 工作流编排平台，帮助你用可视化节点编辑器构建生成式 AI 流程。",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Vibe Workflow - 开源 AI 工作流编排平台",
-    description:
-      "免费、开源、可自托管的节点式 AI 工作流编排平台，帮助你用可视化节点编辑器构建生成式 AI 流程。",
-  },
+const metadataByLang = {
+  en: enCommon,
+  zh: zhCommon,
 };
 
-export default function RootLayout({ children }) {
+const getLocaleResources = (lang) => {
+  const normalizedLang = lang?.toLowerCase().startsWith("en") ? "en" : "zh";
+  return {
+    lang: normalizedLang,
+    resources: metadataByLang[normalizedLang],
+  };
+};
+
+export async function generateMetadata() {
+  const cookieStore = await cookies();
+  const { resources } = getLocaleResources(cookieStore.get("i18n_lang")?.value);
+
+  return {
+    title: resources.siteTitle,
+    description: resources.siteDescription,
+    keywords: resources.siteKeywords,
+    openGraph: {
+      title: resources.siteTitle,
+      description: resources.siteOgDescription,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: resources.siteTitle,
+      description: resources.siteTwitterDescription,
+    },
+  };
+}
+
+export default async function RootLayout({ children }) {
+  const cookieStore = await cookies();
+  const { lang } = getLocaleResources(cookieStore.get("i18n_lang")?.value);
+
   return (
-    <html lang="zh-CN">
+    <html lang={lang === "zh" ? "zh-CN" : "en"}>
       <body className="antialiased">
         <I18nProvider>
           {children}

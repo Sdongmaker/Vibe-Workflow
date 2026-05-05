@@ -11,7 +11,12 @@ const resources = {
   zh: { nodes: zh, chat: zhChat },
 };
 
-const savedLang = (typeof window !== 'undefined' && localStorage.getItem('i18n_lang')) || 'zh';
+const normalizeLang = (lang) => {
+  const value = (lang || 'zh').toLowerCase();
+  return value.startsWith('en') ? 'en' : 'zh';
+};
+
+const savedLang = normalizeLang(typeof window !== 'undefined' && localStorage.getItem('i18n_lang'));
 
 if (!i18n.isInitialized) {
   i18n
@@ -40,7 +45,7 @@ if (i18n.isInitialized && typeof i18n.getResourceBundle === 'function' && typeof
 // Sync language from localStorage changes (triggered by client's LanguageSwitcher)
 if (typeof window !== 'undefined') {
   window.addEventListener('languageChanged', () => {
-    const lang = localStorage.getItem('i18n_lang') || 'zh';
+    const lang = normalizeLang(localStorage.getItem('i18n_lang'));
     if (i18n.language !== lang) {
       i18n.changeLanguage(lang);
     }

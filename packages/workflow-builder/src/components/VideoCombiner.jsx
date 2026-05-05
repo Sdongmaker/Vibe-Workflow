@@ -24,7 +24,19 @@ const outputHandles = [
 ];
 
 const VideoCombiner = ({ id, data, selected }) => {
-  const { t } = useTranslation("nodes");
+  const { t, i18n } = useTranslation("nodes");
+  const activeLanguage = i18n.resolvedLanguage || i18n.language || "";
+  const shouldShowBackendStatusText = activeLanguage.toLowerCase().startsWith("en");
+  const isLikelyTechnicalStatusText = (value) =>
+    /^(https?:\/\/|\/|[A-Za-z0-9._-]+:\/\/|[A-Z0-9_.:-]+)$/.test(value);
+  const getVisibleStatusMessage = (message, fallback) => {
+    const text = typeof message === "string" ? message.trim() : "";
+    if (!text) return fallback;
+    if (shouldShowBackendStatusText) return text;
+    if (!/[A-Za-z]/.test(text)) return text;
+    if (isLikelyTechnicalStatusText(text)) return text;
+    return fallback;
+  };
   const models = useMemo(() => {
     return data.nodeSchemas?.categories?.utility?.models 
       ? Object.values(data.nodeSchemas.categories.utility.models) 
@@ -219,7 +231,7 @@ const VideoCombiner = ({ id, data, selected }) => {
           const outputs = latest?.result?.outputs;
           let errorMsg = t("generationFailed");
           if (outputs && outputs[0]?.value?.error) {
-            errorMsg = outputs[0].value.error; 
+            errorMsg = getVisibleStatusMessage(outputs[0].value.error, t("generationFailed"));
           }
           toast.error(t("toastNodeFailed", { id }));
           const currentHistory = data.outputHistory || [];
@@ -231,7 +243,7 @@ const VideoCombiner = ({ id, data, selected }) => {
         console.log(error);
         clearInterval(interval);
         data.onDataChange(id, { isLoading: false });
-        toast.error(t("toastFailedStatus"));
+        toast.error(t("toastFailedStatusNode", { node: `${t("videoCombiner")} ${id.replace(/^\D+/g, "")}` }));
       });
     }, 3000);
   };
@@ -278,7 +290,7 @@ const VideoCombiner = ({ id, data, selected }) => {
       pollNodeStatus(response.data.run_id);
     } catch(error) {
       data.onDataChange(id, { isLoading: false });
-      toast.error(error.response?.data?.detail || t("errorRunningNode"));
+      toast.error(getVisibleStatusMessage(error.response?.data?.detail, t("errorRunningNode")));
       console.error(error);
     };
   };
@@ -362,7 +374,7 @@ const VideoCombiner = ({ id, data, selected }) => {
         }
         toast.success(t("toastHistoryDeleted"));
       } catch (error) {
-        toast.error(error.response?.data?.detail || t("toastFailedDeleteHistory"));
+        toast.error(getVisibleStatusMessage(error.response?.data?.detail, t("toastFailedDeleteHistory")));
         console.error(error);
       }
     }
@@ -446,6 +458,7 @@ const VideoCombiner = ({ id, data, selected }) => {
                 disabled={currentHistoryIndex <= 0}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title={t("previous")}
+                aria-label={t("previous")}
               >
                 <FaAngleLeft size={10} />
               </button>
@@ -460,6 +473,7 @@ const VideoCombiner = ({ id, data, selected }) => {
                   onClick={handleDeleteHistory}
                   className="p-1 hover:bg-red-500/10 rounded-full text-zinc-400 hover:text-red-500 transition-colors flex items-center justify-center"
                   title={t("deleteHistory")}
+                  aria-label={t("deleteHistory")}
                 >
                   <IoTrashOutline size={10} />
                 </button>
@@ -479,6 +493,7 @@ const VideoCombiner = ({ id, data, selected }) => {
                 disabled={currentHistoryIndex >= outputHistory.length - 1}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title={t("next")}
+                aria-label={t("next")}
               >
                 <FaAngleRight size={10} />
               </button>
@@ -501,8 +516,8 @@ const VideoCombiner = ({ id, data, selected }) => {
             <span className="text-[10px] font-bold text-orange-500 tracking-wider uppercase">{t("combining")}</span>
           </div>
         ) : data.errorMsg ? (
-          <div className="text-red-400 text-xs font-medium p-3 bg-red-500/10 rounded-xl border border-red-500/20 m-3 w-full capitalize">
-            {data.errorMsg}
+        <div className="text-red-400 text-xs font-medium p-3 bg-red-500/10 rounded-xl border border-red-500/20 m-3 w-full">
+            {getVisibleStatusMessage(data.errorMsg, t("generationFailed"))}
           </div>
         ) : currentOutput ? (
           <div className="h-full w-full relative">

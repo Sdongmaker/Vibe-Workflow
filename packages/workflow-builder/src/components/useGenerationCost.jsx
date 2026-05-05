@@ -23,7 +23,11 @@ export const useGenerationCost = (selectedModel, formValues) => {
         setIsRefreshingCost(false);
       })
       .catch((error) => {
-        console.error("Error fetching cost:", error);
+        if (process.env.NODE_ENV !== "production") {
+          const status = error?.response?.status;
+          const detail = error?.response?.data?.detail || error?.message;
+          console.debug("生成成本暂不可用", { status, detail });
+        }
         setGenerationCost(null);
         setIsRefreshingCost(false);
       });

@@ -1,5 +1,24 @@
 {
   "workflowPro": "WorkflowPro",
   "getApiKey": "Get API Key",
-  "switchLang": "中"
+  "getApiKeyAria": "Open API key page",
+  "switchLang": "中",
+  "switchLangAria": "Switch language to Chinese",
+  "siteTitle": "Vibe Workflow - Open-source AI workflow orchestration platform",
+  "siteDescription": "Vibe Workflow is a free, open-source, self-hosted node-based AI workflow orchestration platform that helps you build generative AI flows with a visual node editor, without a subscription.",
+  "siteOgDescription": "Free, open-source, self-hosted node-based AI workflow orchestration platform for building generative AI flows with a visual node editor.",
+  "siteTwitterDescription": "Free, open-source, self-hosted node-based AI workflow orchestration platform for building generative AI flows.",
+  "siteKeywords": [
+    "Vibe Workflow",
+    "open-source AI workflow",
+    "node-based AI editor",
+    "generative AI pipeline",
+    "visual workflow builder",
+    "self-hosted AI",
+    "AI workflow automation",
+    "no-code AI workflow",
+    "AI image generation workflow",
+    "AI video generation workflow",
+    "open-source generative AI"
+  ]
 }

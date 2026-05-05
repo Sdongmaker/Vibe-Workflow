@@ -53,7 +53,19 @@ const ImageGeneration = ({ id, data, selected }) => {
   const edges = useStore((state) => state.edges);
   const properties = nodeSchemas?.categories?.image?.models?.[selectedModel.id]?.input_schema?.schemas?.input_data?.properties;
   const { generationCost, isRefreshingCost } = useGenerationCost(selectedModel, formValues);
-  const { t } = useTranslation("nodes");
+  const { t, i18n } = useTranslation("nodes");
+  const activeLanguage = i18n.resolvedLanguage || i18n.language || "";
+  const shouldShowBackendStatusText = activeLanguage.toLowerCase().startsWith("en");
+  const isLikelyTechnicalStatusText = (value) =>
+    /^(https?:\/\/|\/|[A-Za-z0-9._-]+:\/\/|[A-Z0-9_.:-]+)$/.test(value);
+  const getVisibleStatusMessage = (message, fallback) => {
+    const text = typeof message === "string" ? message.trim() : "";
+    if (!text) return fallback;
+    if (shouldShowBackendStatusText) return text;
+    if (!/[A-Za-z]/.test(text)) return text;
+    if (isLikelyTechnicalStatusText(text)) return text;
+    return fallback;
+  };
 
   useEffect(() => {
     if (data.cost !== generationCost) {
@@ -228,7 +240,7 @@ const ImageGeneration = ({ id, data, selected }) => {
           let errorMsg = t("generationFailed");
 
           if (outputs && outputs[0]?.value?.error) {
-            errorMsg = outputs[0].value.error; 
+            errorMsg = getVisibleStatusMessage(outputs[0].value.error, t("generationFailed"));
           }
           toast.error(t("toastNodeFailed", { id }));
           
@@ -288,7 +300,7 @@ const ImageGeneration = ({ id, data, selected }) => {
       pollNodeStatus(response.data.run_id);
     } catch(error) {
       data.onDataChange(id, { isLoading: false });
-      toast.error(error.response?.data?.detail || t("errorRunningNode"));
+      toast.error(getVisibleStatusMessage(error.response?.data?.detail, t("errorRunningNode")));
       console.error(error);
     };
   };
@@ -396,7 +408,7 @@ const ImageGeneration = ({ id, data, selected }) => {
         }
         toast.success(t("toastHistoryDeleted"));
       } catch (error) {
-        toast.error(error.response?.data?.detail || t("toastFailedDeleteHistory"));
+        toast.error(getVisibleStatusMessage(error.response?.data?.detail, t("toastFailedDeleteHistory")));
         console.error(error);
       }
     }
@@ -457,7 +469,7 @@ const ImageGeneration = ({ id, data, selected }) => {
       });
       if (response.data.success) toast.success(t("toastCoverUpdated"));
     } catch(error) {
-      toast.error(error.response?.data?.detail || t("toastFailedSaveThumbnail"));
+      toast.error(getVisibleStatusMessage(error.response?.data?.detail, t("toastFailedSaveThumbnail")));
       console.error(error);
     };
   };
@@ -514,6 +526,7 @@ const ImageGeneration = ({ id, data, selected }) => {
                 disabled={currentHistoryIndex <= 0}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title={t("previous")}
+                aria-label={t("previous")}
               >
                 <FaAngleLeft size={10} />
               </button>
@@ -528,6 +541,7 @@ const ImageGeneration = ({ id, data, selected }) => {
                   onClick={handleDeleteHistory}
                   className="p-1 hover:bg-red-500/10 rounded-full text-zinc-400 hover:text-red-500 transition-colors flex items-center justify-center"
                   title={t("deleteHistory")}
+                  aria-label={t("deleteHistory")}
                 >
                   <IoTrashOutline size={10} />
                 </button>
@@ -547,6 +561,7 @@ const ImageGeneration = ({ id, data, selected }) => {
                 disabled={currentHistoryIndex >= outputHistory.length - 1}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title={t("next")}
+                aria-label={t("next")}
               >
                 <FaAngleRight size={10} />
               </button>
@@ -577,7 +592,7 @@ const ImageGeneration = ({ id, data, selected }) => {
             </div>
           ) : data.errorMsg ? (
             <div className="text-red-400 text-xs font-medium p-3 bg-red-500/10 rounded-xl border border-red-500/20 m-3 w-full">
-              {data.errorMsg || t("generationFailed")}
+              {getVisibleStatusMessage(data.errorMsg, t("generationFailed"))}
             </div>
           ) : currentOutput && !data.isLoading ? (
             <div className="h-full w-full relative group/image">
@@ -590,6 +605,8 @@ const ImageGeneration = ({ id, data, selected }) => {
                       e.stopPropagation();
                       setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : currentOutputList.length - 1));
                     }}
+                    title={t("previous")}
+                    aria-label={t("previous")}
                     className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white opacity-0 group-hover/image:opacity-100 transition-opacity hover:bg-black/70"
                   >
                     <FaAngleLeft size={16} />
@@ -601,6 +618,8 @@ const ImageGeneration = ({ id, data, selected }) => {
                       e.stopPropagation();
                       setCurrentImageIndex((prev) => (prev < currentOutputList.length - 1 ? prev + 1 : 0));
                     }}
+                    title={t("next")}
+                    aria-label={t("next")}
                     className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white opacity-0 group-hover/image:opacity-100 transition-opacity hover:bg-black/70"
                   >
                     <FaAngleRight size={16} />
@@ -610,7 +629,7 @@ const ImageGeneration = ({ id, data, selected }) => {
               <img
                 key={currentOutput}
                 src={currentOutput}
-                alt={t("preview")}
+                alt={t("imagePreview")}
                 className="w-full h-full object-contain rounded-b-xl animate-in fade-in duration-500"
               />
               <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 pointer-events-none rounded-b-xl flex flex-col justify-end">

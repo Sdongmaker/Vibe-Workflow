@@ -13,8 +13,9 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
   const [uploadProgress, setUploadProgress] = useState(0);
   const [imageMetadata, setImageMetadata] = useState({ width: 0, height: 0, size: null });
   const videoRef = useRef(null);
-  const { t } = useTranslation("nodes");
+  const { t, i18n } = useTranslation("nodes");
   const prevFormValues = useRef(formValues);
+  const acceptedTypeLabel = t(acceptType, { defaultValue: t("file") });
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -70,8 +71,8 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
         }
       })
       .then(() => {
-        const prefix = "https://cdn.muapi.ai/";
-        const uploadedUrl = prefix + fields.key;
+      const prefix = "https://cdn.muapi.ai/";
+      const uploadedUrl = prefix + fields.key;
         setFormValues(prev => ({ ...prev, [type]: uploadedUrl }));
 
         setTimeout(() => {
@@ -81,8 +82,8 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
       })
     })
     .catch((error) => {
-      console.error("Upload failed", error);
-      toast.error(t("toastUploadFailed"));
+      console.error(t("toastUploadFailed"), error);
+      toast.error(i18n.language?.startsWith("zh") ? t("toastUploadFailed") : (error?.response?.data?.detail || t("toastUploadFailed")));
       setUploading(false);
       setUploadProgress(0);
     })  
@@ -208,6 +209,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
             placeholder={t("enterTextPrompt")}
             value={formValues?.prompt || ""}
             onChange={handleTextChange}
+            aria-label={t("enterTextPrompt")}
           />
         ) : uploadType === "upload" && (
           <div 
@@ -234,7 +236,7 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
                   <div className="relative w-full h-full group/image">
                     <img
                       src={formValues?.image_url}
-                      alt={t("preview")}
+                      alt={t("imagePreview")}
                       className="w-full h-full object-contain"
                     />
                     <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 pointer-events-none flex flex-col justify-end">
@@ -268,6 +270,8 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
                   suppressHydrationWarning={true}
                   className="text-white hover:text-red-500 bg-black/40 hover:bg-black cursor-pointer absolute left-4 top-4 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-all duration-300"
                   onClick={removeData}
+                  aria-label={t("removeFile")}
+                  title={t("removeFile")}
                 >
                   &#10005;
                 </button>
@@ -276,14 +280,18 @@ const UploadNode = ({ id, data, formValues, setFormValues, selectedModel, loadin
               <label 
                 style={{ minHeight: 200 }} 
                 className="cursor-pointer flex flex-col items-center justify-center gap-2 text-gray-400 border border-dashed border-gray-600 rounded-lg p-4 w-full flex-1 hover:bg-gray-700/50 h-full"
-              >                <FiUpload size={20} />
-                <span className="text-xs capitalize">{t("uploadBtn", { type: t(acceptType) })}</span>
+                aria-label={t("uploadBtn", { type: acceptedTypeLabel })}
+                title={t("uploadBtn", { type: acceptedTypeLabel })}
+              >
+                <FiUpload size={20} />
+                <span className="text-xs capitalize">{t("uploadBtn", { type: acceptedTypeLabel })}</span>
                 <span className="text-xs text-gray-500">{t("dragDropHint")}</span>
                 <input
                   type="file"
                   accept={acceptType === "image" ? "image/*": acceptType === "video" ? "video/*": "audio/*"}
                   className="hidden"
                   onChange={handleFileUpload}
+                  aria-label={t("uploadBtn", { type: acceptedTypeLabel })}
                 />
               </label>
             )}

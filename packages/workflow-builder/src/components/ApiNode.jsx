@@ -40,7 +40,19 @@ const ApiNode = ({ id, data, selected }) => {
   const edges = useStore((state) => state.edges);
   const modelSchema = nodeSchemas?.categories?.api?.models[selectedModel.id];  
   const textareaRef = useRef(null);
-  const { t } = useTranslation("nodes");
+  const { t, i18n } = useTranslation("nodes");
+  const activeLanguage = i18n.resolvedLanguage || i18n.language || "";
+  const shouldShowBackendStatusText = activeLanguage.toLowerCase().startsWith("en");
+  const isLikelyTechnicalStatusText = (value) =>
+    /^(https?:\/\/|\/|[A-Za-z0-9._-]+:\/\/|[A-Z0-9_.:-]+)$/.test(value);
+  const getVisibleStatusMessage = (message, fallback) => {
+    const text = typeof message === "string" ? message.trim() : "";
+    if (!text) return fallback;
+    if (shouldShowBackendStatusText) return text;
+    if (!/[A-Za-z]/.test(text)) return text;
+    if (isLikelyTechnicalStatusText(text)) return text;
+    return fallback;
+  };
 
   useEffect(() => {
     if (data.cost !== 0.025) {
@@ -212,7 +224,7 @@ const ApiNode = ({ id, data, selected }) => {
     })
       .catch((error) => {
       setLoading(0);
-      toast.error(error.response?.data?.detail || t("failedToFetchModelDetails"));
+      toast.error(getVisibleStatusMessage(error.response?.data?.detail, t("failedToFetchModelDetails")));
       console.error(error);
     })
   };
@@ -374,7 +386,7 @@ const ApiNode = ({ id, data, selected }) => {
           let errorMsg = t("generationFailed");
 
           if (outputs && outputs[0]?.value?.error) {
-            errorMsg = outputs[0].value.error; 
+            errorMsg = getVisibleStatusMessage(outputs[0].value.error, t("generationFailed"));
           }
           toast.error(t("toastNodeFailed", { id }));
           const currentHistory = data.outputHistory || [];
@@ -441,7 +453,7 @@ const ApiNode = ({ id, data, selected }) => {
       pollNodeStatus(response.data.run_id);
     } catch(error) {
       data.onDataChange(id, { isLoading: false });
-      toast.error(error.response?.data?.detail || t("errorRunningNode"));
+      toast.error(getVisibleStatusMessage(error.response?.data?.detail, t("errorRunningNode")));
       console.error(error);
     };
   };
@@ -547,7 +559,7 @@ const ApiNode = ({ id, data, selected }) => {
         }
         toast.success(t("toastHistoryDeleted"));
       } catch (error) {
-        toast.error(error.response?.data?.detail || t("toastFailedDeleteHistory"));
+        toast.error(getVisibleStatusMessage(error.response?.data?.detail, t("toastFailedDeleteHistory")));
         console.error(error);
       }
     }
@@ -613,6 +625,7 @@ const ApiNode = ({ id, data, selected }) => {
                 disabled={currentHistoryIndex <= 0}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title={t("previous")}
+                aria-label={t("previous")}
               >
                 <FaAngleLeft size={10} />
               </button>
@@ -627,6 +640,7 @@ const ApiNode = ({ id, data, selected }) => {
                   onClick={handleDeleteHistory}
                   className="p-1 hover:bg-red-500/10 rounded-full text-zinc-400 hover:text-red-500 transition-colors flex items-center justify-center"
                   title={t("deleteHistory")}
+                  aria-label={t("deleteHistory")}
                 >
                   <IoTrashOutline size={10} />
                 </button>
@@ -646,6 +660,7 @@ const ApiNode = ({ id, data, selected }) => {
                 disabled={currentHistoryIndex >= outputHistory.length - 1}
                 className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title={t("next")}
+                aria-label={t("next")}
               >
                 <FaAngleRight size={10} />
               </button>
@@ -669,7 +684,7 @@ const ApiNode = ({ id, data, selected }) => {
           </div>
         ) : data.errorMsg ? (
           <div className="text-red-400 text-xs font-medium p-3 bg-red-500/10 rounded-xl border border-red-500/20 m-3 w-full">
-            {data.errorMsg || t("apiFailure")}
+            {getVisibleStatusMessage(data.errorMsg, t("apiFailure"))}
           </div>
         ) : currentOutput && !data.isLoading ? (
           <div className="w-full h-full relative group/api">
@@ -678,6 +693,8 @@ const ApiNode = ({ id, data, selected }) => {
                 <video
                   src={currentOutput}
                   controls
+                  title={t("preview")}
+                  aria-label={t("preview")}
                   className="w-full h-full rounded-md object-contain"
                 />
               ) : (currentOutputList[currentOutputIndex]?.type === 'image_url' || currentOutputList[currentOutputIndex]?.type === 'image') ? (
@@ -689,7 +706,7 @@ const ApiNode = ({ id, data, selected }) => {
               ) : currentOutputList[currentOutputIndex]?.type === 'audio_url' ? (
                 <div className="w-full px-4">
                   <p className="text-[10px] text-white/40 mb-2 truncate">{currentOutput}</p>
-                  <audio src={currentOutput} controls className="w-full" />
+                  <audio src={currentOutput} controls title={t("preview")} aria-label={t("preview")} className="w-full" />
                 </div>
               ) : (
                 <div className="flex-1 w-full p-2">
@@ -705,31 +722,35 @@ const ApiNode = ({ id, data, selected }) => {
             </div>
             {currentOutputList.length > 1 && (
               <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10 opacity-0 group-hover/api:opacity-100 transition-opacity">
-                <button
-                  type="button"
-                  suppressHydrationWarning={true}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentOutputIndex((prev) => (prev > 0 ? prev - 1 : currentOutputList.length - 1));
-                  }}
-                  className="text-white hover:text-blue-400 p-0.5"
-                >
-                  <FaAngleLeft size={12} />
-                </button>
+                  <button
+                    type="button"
+                    suppressHydrationWarning={true}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentOutputIndex((prev) => (prev > 0 ? prev - 1 : currentOutputList.length - 1));
+                    }}
+                    title={t("previous")}
+                    aria-label={t("previous")}
+                    className="text-white hover:text-blue-400 p-0.5"
+                  >
+                    <FaAngleLeft size={12} />
+                  </button>
                 <span className="text-[10px] text-white/80 tabular-nums">
                   {currentOutputIndex + 1}/{currentOutputList.length}
                 </span>
-                <button
-                  type="button"
-                  suppressHydrationWarning={true}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentOutputIndex((prev) => (prev < currentOutputList.length - 1 ? prev + 1 : 0));
-                  }}
-                  className="text-white hover:text-blue-400 p-0.5"
-                >
-                  <FaAngleRight size={12} />
-                </button>
+                  <button
+                    type="button"
+                    suppressHydrationWarning={true}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentOutputIndex((prev) => (prev < currentOutputList.length - 1 ? prev + 1 : 0));
+                    }}
+                    title={t("next")}
+                    aria-label={t("next")}
+                    className="text-white hover:text-blue-400 p-0.5"
+                  >
+                    <FaAngleRight size={12} />
+                  </button>
               </div>
             )}
           </div>
